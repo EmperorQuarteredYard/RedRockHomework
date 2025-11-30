@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程管理 - 选课系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>课程管理</h1>
+        <nav>
+            <a href="/" class="nav-link">首页</a>
+            <a href="/students" class="nav-link">学生管理</a>
+            <a href="/lessons" class="nav-link active">课程管理</a>
+            <a href="/enrollment" class="nav-link">选课管理</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="form-section">
+            <h3>添加新课程</h3>
+            <form id="addLessonForm">
+                <input type="text" id="lessonName" placeholder="课程名称" required>
+                <input type="text" id="lessonCode" placeholder="课程代码" required>
+                <input type="number" id="lessonCredit" placeholder="学分" value="1" min="1">
+                <input type="number" id="lessonCapacity" placeholder="容量" value="30" min="1">
+                <textarea id="lessonDescription" placeholder="课程描述"></textarea>
+                <button type="submit">添加课程</button>
+            </form>
+        </div>
+
+        <div class="table-section">
+            <h3>课程列表</h3>
+            <table id="lessonsTable">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>课程名称</th>
+                    <th>课程代码</th>
+                    <th>学分</th>
+                    <th>容量</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="/static/js/lessons.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制台 - 学生选课系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>控制台</h1>
+        <nav>
+            <a href="/" class="nav-link">首页</a>
+            <a href="/dashboard" class="nav-link active">控制台</a>
+            {{if .isLoggedIn}}
+            <a href="/profile" class="nav-link">个人资料</a>
+            {{if eq .role "admin"}}
+            <a href="/admin" class="nav-link">管理后台</a>
+            {{end}}
+            <a href="/students" class="nav-link">学生管理</a>
+            <a href="/lessons" class="nav-link">课程管理</a>
+            <a href="/enrollment" class="nav-link">选课管理</a>
+            <a href="javascript:void(0)" onclick="logout()" class="nav-link">退出登录</a>
+            {{else}}
+            <a href="/login" class="nav-link">登录</a>
+            <a href="/register" class="nav-link">注册</a>
+            {{end}}
+        </nav>
+    </header>
+
+    <main>
+        {{if .isLoggedIn}}
+        <div class="welcome-section">
+            <h2>欢迎回来, {{.username}}!</h2>
+            <p>您的角色: <strong>{{.role}}</strong></p>
+        </div>
+
+        <div class="quick-actions">
+            <h3>快速操作</h3>
+            <div class="action-buttons">
+                {{if eq .role "admin"}}
+                <button onclick="location.href='/admin'">管理后台</button>
+                <button onclick="location.href='/students'">学生管理</button>
+                <button onclick="location.href='/lessons'">课程管理</button>
+                {{else}}
+                <button onclick="location.href='/enrollment'">选课管理</button>
+                <button onclick="location.href='/lessons'">查看课程</button>
+                {{end}}
+                <button onclick="location.href='/profile'">个人资料</button>
+            </div>
+        </div>
+        {{else}}
+        <div class="welcome-section">
+            <h2>欢迎使用学生选课系统</h2>
+            <p>请 <a href="/login">登录</a> 或 <a href="/register">注册</a> 以使用系统功能</p>
+        </div>
+        {{end}}
+    </main>
+</div>
+
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>
