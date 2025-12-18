@@ -4,6 +4,12 @@ import (
 	"time"
 )
 
+type AllModels interface {
+	STUDENT |
+		LESSON |
+		StudentLesson |
+		USER
+} //有了接口之后就好啦
 type STUDENT struct {
 	Name      string `gorm:"type:varchar(100);not null"`
 	ID        int    `gorm:"primaryKey"`

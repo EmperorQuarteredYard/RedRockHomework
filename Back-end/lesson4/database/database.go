@@ -11,7 +11,7 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
-	dsn := "root:123456@tcp(your_host:8080)/student_system?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "RedRockHomework_ClassSelection:BestRedRock@tcp(your_host:8080)/student_system?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 

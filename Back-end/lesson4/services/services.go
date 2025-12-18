@@ -66,7 +66,7 @@ func (s *StudentService) DropLesson(studentID int, lessonCode string) error {
 
 func (s *StudentService) GetLessonStudents(lessonCode string) (students []models.STUDENT, err error) {
 	var lesson models.LESSON
-	if err := database.DB.Where("code = ?", lessonCode).First(&lesson).Error; err != nil {
+	if err = database.DB.Where("code = ?", lessonCode).First(&lesson).Error; err != nil {
 		err = errors.New("课程不存在")
 		return
 	}

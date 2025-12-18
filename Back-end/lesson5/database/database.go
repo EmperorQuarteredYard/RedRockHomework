@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"student_system/models"
 	"time"
 
@@ -12,12 +13,17 @@ import (
 var DB *gorm.DB
 
 func InitDB() error {
-	dsn := "RedRockHomework_ClassSelection:BestRedRock@tcp(your_host:8080)/student_system?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "RedRockHomework_ClassSelection:BestRedRock@tcp(127.0.0.1:3306)/student_system?charset=utf8mb4&parseTime=True&loc=Local"
 
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
 	if err != nil {
-		return fmt.Errorf("failed to connect to database: %v", err)
+		// 打印详细的错误信息
+		log.Printf("fail to connect with GORM: %v", err)
+		fmt.Printf("error type: %T\n", err)
+		fmt.Printf("details: %+v\n", err)
+		return err
 	}
 
 	fmt.Println("Database connected successfully!")
