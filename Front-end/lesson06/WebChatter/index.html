@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <title>匿名聊天室</title>
+  <meta charset="UTF-8">
+</head>
+
+<body>
+  <h2>发布评论</h2>
+  <textarea id="input" rows="3" cols="50" placeholder="输入评论..."></textarea>
+  <br>
+  <button onclick="add()">发布</button>
+
+  <h2>评论列表</h2>
+  <div id="list"></div>
+
+  <script>
+    let comments = JSON.parse(localStorage.getItem('comments') || '[]');
+    show();
+
+    function add() {
+      const text = document.getElementById('input').value.trim();
+      if (!text) return;
+
+      comments.unshift({ text, time: new Date().toLocaleString() });
+      localStorage.setItem('comments', JSON.stringify(comments));
+      document.getElementById('input').value = '';
+      show();
+    }
+
+    function del(i) {
+      if (confirm('删除？')) {
+        comments.splice(i, 1);
+        localStorage.setItem('comments', JSON.stringify(comments));
+        show();
+      }
+    }
+
+    function show() {
+      document.getElementById('list').innerHTML = comments.map((c, i) =>
+        `<div><span>${c.time}</span> <button onclick="del(${i})">删除</button><p>${c.text}</p></div>`
+      ).join('');
+    }
+  </script>
+</body>
+
+</html>

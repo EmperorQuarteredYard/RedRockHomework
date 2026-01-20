@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>学生成绩计算器 (JSON API版)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div style="max-width:500px; margin:50px auto; padding:20px; border:1px solid #ccc; border-radius:5px;">
+  <h1 style="text-align:center; color:#333;">学生成绩计算器</h1>
+  <p style="text-align:center; color:#666;">使用JSON API进行数据交互</p>
+
+  <div style="margin-bottom:20px;">
+    <h3>输入数据格式:</h3>
+    <pre style="background-color:#f5f5f5; padding:10px; border-radius:3px; overflow-x:auto;">
+{
+  "name": "学生姓名",
+  "score": [成绩1, 成绩2, 成绩3, ...]
+}
+					</pre>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <h3>测试数据示例:</h3>
+    <div style="margin-bottom:10px;">
+      <button onclick="setExample1()" style="background-color:#6c757d; color:white; padding:8px 15px; border:none; border-radius:3px; cursor:pointer; margin-right:5px;">示例1</button>
+      <button onclick="setExample2()" style="background-color:#6c757d; color:white; padding:8px 15px; border:none; border-radius:3px; cursor:pointer; margin-right:5px;">示例2</button>
+      <button onclick="setExample3()" style="background-color:#6c757d; color:white; padding:8px 15px; border:none; border-radius:3px; cursor:pointer;">示例3</button>
+    </div>
+  </div>
+
+  <div style="margin-bottom:15px;">
+    <label style="display:block; margin-bottom:5px; font-weight:bold;">请求JSON数据:</label>
+    <textarea id="jsonInput" style="width:100%; height:150px; padding:10px; border:1px solid #ddd; border-radius:3px; font-family:monospace; font-size:14px;">{"name":"小明","score":[85.5,92.0,78.5,88.0,91.5]}</textarea>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <button onclick="calculateAverage()" style="background-color:#007bff; color:white; padding:10px 20px; border:none; border-radius:3px; cursor:pointer; font-size:16px; margin-right:10px;">计算平均成绩</button>
+    <button onclick="clearInput()" style="background-color:#dc3545; color:white; padding:10px 20px; border:none; border-radius:3px; cursor:pointer; font-size:16px;">清空</button>
+  </div>
+
+  <div id="result" style="display:none; background-color:#f8f9fa; padding:20px; border-radius:5px; margin-top:20px; border-left:5px solid #28a745;">
+    <h3 style="margin-top:0;">计算结果:</h3>
+    <pre id="resultContent" style="background-color:#fff; padding:10px; border-radius:3px; overflow-x:auto;"></pre>
+    <p style="margin-bottom:0; color:#666; font-size:14px;">响应格式: {"average": 平均分}</p>
+  </div>
+
+  <div id="error" style="display:none; background-color:#f8d7da; padding:15px; border-radius:5px; margin-top:20px; border-left:5px solid #dc3545;">
+    <h4 style="margin-top:0; color:#721c24;">错误信息:</h4>
+    <p id="errorContent" style="margin-bottom:0; color:#721c24;"></p>
+  </div>
+</div>
+
+<script>
+  // 设置示例数据
+  function setExample1() {
+    document.getElementById('jsonInput').value = '{"name":"小明","score":[85.5,92.0,78.5,88.0,91.5]}';
+  }
+
+  function setExample2() {
+    document.getElementById('jsonInput').value = '{"name":"小红","score":[95.0,87.5,92.5,90.0,88.5]}';
+  }
+
+  function setExample3() {
+    document.getElementById('jsonInput').value = '{"name":"小刚","score":[68.0,72.5,75.0,80.5,69.5]}';
+  }
+
+  // 清空输入
+  function clearInput() {
+    document.getElementById('jsonInput').value = '';
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('error').style.display = 'none';
+  }
+
+  // 计算平均成绩
+  function calculateAverage() {
+    // 隐藏之前的错误和结果
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('error').style.display = 'none';
+
+    // 获取输入的JSON
+    const jsonInput = document.getElementById('jsonInput').value.trim();
+
+    if (!jsonInput) {
+      showError('请输入JSON数据');
+      return;
+    }
+
+    // 验证JSON格式
+    let jsonData;
+    try {
+      jsonData = JSON.parse(jsonInput);
+    } catch (e) {
+      showError('JSON格式错误: ' + e.message);
+      return;
+    }
+
+    // 验证必需字段
+    if (!jsonData.name || !jsonData.score || !Array.isArray(jsonData.score)) {
+      showError('JSON数据格式不正确，需要包含name和score数组字段');
+      return;
+    }
+
+    // 发送请求到后端
+    fetch('/calculate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonInput
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('服务器响应错误: ' + response.status);
+              }
+              return response.json();
+            })
+            .then(data => {
+              // 显示结果
+              document.getElementById('resultContent').textContent = JSON.stringify(data, null, 2);
+              document.getElementById('result').style.display = 'block';
+
+              // 滚动到结果位置
+              document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+            })
+            .catch(error => {
+              showError('请求失败: ' + error.message);
+            });
+  }
+
+  // 显示错误信息
+  function showError(message) {
+    document.getElementById('errorContent').textContent = message;
+    document.getElementById('error').style.display = 'block';
+
+    // 滚动到错误位置
+    document.getElementById('error').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // 页面加载时设置示例1
+  window.onload = function() {
+    setExample1();
+  };
+</script>
+</body>
+</html>

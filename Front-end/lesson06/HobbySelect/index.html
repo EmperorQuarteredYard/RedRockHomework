@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Checkbox Selection</title>
+</head>
+<style>
+    h1 {
+        color: rgb(11, 54, 14);
+    }
+
+    .checkbox {
+        margin-bottom: 10px;
+        width: 100px;
+        background-color: aqua;
+        border: 1px solid black;
+    }
+
+    .checkbox:hover {
+        background-color: rgb(127, 255, 212);
+    }
+
+    .container {
+        display: flex;
+        align-items: center;
+        width: 300px;
+    }
+</style>
+
+<body>
+    <h1>请选择你的爱好</h1>
+    <div id="divlist" class="container">
+        <input type="checkbox" name="item1" value="1" class="checkbox"> 内卷<br>
+        <input type="checkbox" name="item2" value="2" class="checkbox"> 疯狂内卷<br>
+        <input type="checkbox" name="item3" value="3" class="checkbox"> 拼命内卷<br>
+        <input type="checkbox" name="item4" value="4" class="checkbox"> 使劲内卷<br>
+    </div>
+    <br>
+    <input type="button" value="全选">
+    <input type="button" value="全不选">
+    <input type="button" value="反选">
+
+    <script>
+        // Get all checkboxes
+        const checkboxes = document.querySelectorAll('#divlist input[type="checkbox"]');
+        // Get buttons
+        const selectAllBtn = document.querySelector('input[value="全选"]');
+        const selectNoneBtn = document.querySelector('input[value="全不选"]');
+        const inverseBtn = document.querySelector('input[value="反选"]');
+
+        // Select All functionality
+        selectAllBtn.addEventListener('click', function () {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        });
+
+        // Select None functionality
+        selectNoneBtn.addEventListener('click', function () {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        });
+
+        // Inverse Selection functionality
+        inverseBtn.addEventListener('click', function () {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !checkbox.checked;
+            });
+        });
+    </script>
+</body>
