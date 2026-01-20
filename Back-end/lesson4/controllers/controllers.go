@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"RedrockHomework/lesson4/models"
-	"RedrockHomework/lesson4/services"
 	"github.com/gin-gonic/gin"
+	"lesson4/models"
+	"lesson4/services"
 	"net/http"
 	"strconv"
 )

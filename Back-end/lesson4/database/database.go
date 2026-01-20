@@ -1,15 +1,26 @@
 package database
 
 import (
-	"RedrockHomework/lesson4/models"
 	"fmt"
+	"lesson4/models"
+	"os"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
-
+var databaseConfig struct {
+	USERNAME string
+	PASSWORD string
+	DATABASE string
+	PORT     string
+	HOST     string
+}
+config :=databaseConfig{}
+func getConfig() {
+	file,err:=os.Open("config/database.json")
+}
 func InitDB() {
 	dsn := "RedRockHomework_ClassSelection:BestRedRock@tcp(your_host:8080)/student_system?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error

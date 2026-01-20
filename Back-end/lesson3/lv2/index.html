@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>学生成绩计算器</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+<div class="container">
+  <h1>学生成绩计算器</h1>
+
+  <form id="gradeForm">
+    <div class="form-group">
+      <label>学生姓名:</label>
+      <input id="nameInput" type="text" name="name" required>
+    </div>
+
+    <h3>请输入5个科目的成绩:</h3>
+    <div id="scores">
+      <div class="score-row">
+        <label>科目1:</label>
+        <input type="number" name="score" min="0" max="100" step="0.1" required>
+      </div>
+
+      <div class="score-row">
+        <label>科目2:</label>
+        <input type="number" name="score" min="0" max="100" step="0.1" required>
+      </div>
+
+      <div class="score-row">
+        <label>科目3:</label>
+        <input type="number" name="score" min="0" max="100" step="0.1" required>
+      </div>
+
+      <div class="score-row">
+        <label>科目4:</label>
+        <input type="number" name="score" min="0" max="100" step="0.1" required>
+      </div>
+
+      <div class="score-row">
+        <label>科目5:</label>
+        <input type="number" name="score" min="0" max="100" step="0.1" required>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button type="submit" id="submitData">计算平均成绩</button>
+      <button type="button" id="resetButton">重置</button>
+    </div>
+  </form>
+
+  <div class="instructions">
+    <p><strong>说明:</strong> 填写学生姓名和5个科目的成绩(0-100分)，点击计算按钮即可。</p>
+  </div>
+
+  <div id="result" class="result-container">
+    <h3>计算结果:</h3>
+    <pre id="resultContent"></pre>
+    <p class="response-format">响应格式: {"average": 平均分}</p>
+  </div>
+
+  <div id="error" class="error-container">
+    <h4>错误信息:</h4>
+    <p id="errorContent"></p>
+  </div>
+</div>
+
+<script src="static/main.js"></script>
+</body>
+</html>
