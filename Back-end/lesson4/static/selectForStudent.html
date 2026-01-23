@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生选课</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-success {
+            background: #2ed573;
+            color: white;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-selected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-available {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-full {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>学生选课系统</h1>
+    <button class="logout-btn" onclick="location.href='/'">退出登录</button>
+</div>
+
+<div class="container">
+    <!-- 左侧：选课操作 -->
+    <div class="card">
+        <div class="card-header">
+            选课操作
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label for="studentId">学生ID</label>
+                <input type="number" id="studentId" placeholder="请输入学生ID">
+            </div>
+
+            <div id="operationMessage" class="message"></div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="getAvailableLessons()" class="btn btn-primary">
+                    <span id="loadLessonsText">查看可选课程</span>
+                    <span id="loadLessonsLoading" class="loading" style="display: none;"></span>
+                </button>
+                <button onclick="getSelectedLessons()" class="btn btn-secondary">
+                    <span id="checkSelectedText">查看已选课程</span>
+                    <span id="checkSelectedLoading" class="loading" style="display: none;"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：选课管理 -->
+    <div class="card">
+        <div class="card-header">
+            选课管理
+        </div>
+        <div class="card-body">
+            <div id="lessonsSection" style="display: none;">
+                <h3 style="margin-bottom: 15px;">课程列表</h3>
+                <div class="table-container">
+                    <table id="lessonsTable">
+                        <thead>
+                        <tr>
+                            <th>课程代码</th>
+                            <th>课程名称</th>
+                            <th>学分</th>
+                            <th>容量</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="lessonsTableBody">
+                        <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="selectedLessonsSection" style="display: none;">
+                <h3 style="margin-bottom: 15px;">已选课程</h3>
+                <div class="table-container">
+                    <table id="selectedLessonsTable">
+                        <thead>
+                        <tr>
+                            <th>课程代码</th>
+                            <th>课程名称</th>
+                            <th>学分</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="selectedLessonsTableBody">
+                        <!-- 动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentStudentId = null;
+
+    function showMessage(elementId, message, type = 'success') {
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+        element.className = `message message-${type}`;
+        element.style.display = 'block';
+
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 5000);
+    }
+
+    function showLoading(buttonId, textId, loadingId) {
+        document.getElementById(textId).style.display = 'none';
+        document.getElementById(loadingId).style.display = 'inline-block';
+    }
+
+    function hideLoading(buttonId, textId, loadingId) {
+        document.getElementById(textId).style.display = 'inline-block';
+        document.getElementById(loadingId).style.display = 'none';
+    }
+
+    async function getAvailableLessons() {
+        const studentId = document.getElementById('studentId').value;
+
+        if (!studentId) {
+            showMessage('operationMessage', '请输入学生ID', 'error');
+            return;
+        }
+
+        currentStudentId = studentId;
+        showLoading('getAvailableLessons', 'loadLessonsText', 'loadLessonsLoading');
+
+        try {
+            const response = await fetch('/selectLesson', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ student_id: parseInt(studentId) })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                showMessage('operationMessage', data.error, 'error');
+            } else {
+                displayLessons(data.data || data);
+                showMessage('operationMessage', '加载成功', 'success');
+            }
+        } catch (error) {
+            showMessage('operationMessage', '网络错误：' + error.message, 'error');
+        } finally {
+            hideLoading('getAvailableLessons', 'loadLessonsText', 'loadLessonsLoading');
+        }
+    }
+
+    function displayLessons(lessons) {
+        const tableBody = document.getElementById('lessonsTableBody');
+        tableBody.innerHTML = '';
+
+        if (!lessons || lessons.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">暂无课程</td></tr>';
+        } else {
+            lessons.forEach(lesson => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${lesson.code}</td>
+                        <td>${lesson.name}</td>
+                        <td>${lesson.credit}</td>
+                        <td>${lesson.current || 0}/${lesson.capacity || 30}</td>
+                        <td>
+                            <button onclick="selectLesson(${lesson.id})" class="btn btn-success" style="padding: 5px 10px; font-size: 12px;">
+                                选课
+                            </button>
+                        </td>
+                    `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        document.getElementById('lessonsSection').style.display = 'block';
+        document.getElementById('selectedLessonsSection').style.display = 'none';
+    }
+
+    async function getSelectedLessons() {
+        const studentId = document.getElementById('studentId').value;
+
+        if (!studentId) {
+            showMessage('operationMessage', '请输入学生ID', 'error');
+            return;
+        }
+
+        currentStudentId = studentId;
+        showLoading('getSelectedLessons', 'checkSelectedText', 'checkSelectedLoading');
+
+        try {
+            const response = await fetch('/selectLesson/check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ student_id: parseInt(studentId) })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                showMessage('operationMessage', data.error, 'error');
+            } else {
+                displaySelectedLessons(data.data || data);
+                showMessage('operationMessage', '加载成功', 'success');
+            }
+        } catch (error) {
+            showMessage('operationMessage', '网络错误：' + error.message, 'error');
+        } finally {
+            hideLoading('getSelectedLessons', 'checkSelectedText', 'checkSelectedLoading');
+        }
+    }
+
+    function displaySelectedLessons(lessons) {
+        const tableBody = document.getElementById('selectedLessonsTableBody');
+        tableBody.innerHTML = '';
+
+        if (!lessons || lessons.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">暂无已选课程</td></tr>';
+        } else {
+            lessons.forEach(lesson => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${lesson.code}</td>
+                        <td>${lesson.name}</td>
+                        <td>${lesson.credit}</td>
+                        <td>
+                            <button onclick="dropLesson(${lesson.id})" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">
+                                退选
+                            </button>
+                        </td>
+                    `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        document.getElementById('selectedLessonsSection').style.display = 'block';
+        document.getElementById('lessonsSection').style.display = 'none';
+    }
+
+    async function selectLesson(lessonId) {
+        if (!currentStudentId) {
+            showMessage('operationMessage', '请先输入学生ID并查看课程', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/selectLesson/select', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    student_id: parseInt(currentStudentId),
+                    lesson_id: lessonId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                showMessage('operationMessage', data.error, 'error');
+            } else {
+                showMessage('operationMessage', '选课成功', 'success');
+                // 刷新课程列表
+                setTimeout(() => {
+                    getAvailableLessons();
+                }, 1000);
+            }
+        } catch (error) {
+            showMessage('operationMessage', '网络错误：' + error.message, 'error');
+        }
+    }
+
+    async function dropLesson(lessonId) {
+        if (!currentStudentId) {
+            showMessage('operationMessage', '请先输入学生ID并查看已选课程', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/selectLesson/drop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    student_id: parseInt(currentStudentId),
+                    lesson_id: lessonId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                showMessage('operationMessage', data.error, 'error');
+            } else {
+                showMessage('operationMessage', '退选成功', 'success');
+                // 刷新已选课程列表
+                setTimeout(() => {
+                    getSelectedLessons();
+                }, 1000);
+            }
+        } catch (error) {
+            showMessage('operationMessage', '网络错误：' + error.message, 'error');
+        }
+    }
+
+    // 页面加载完成后设置事件监听器
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('studentId').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getAvailableLessons();
+            }
+        });
+    });
+</script>
+</body>
+</html>

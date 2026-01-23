@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生管理</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #6a11cb;
+            border: 1px solid #6a11cb;
+        }
+
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-success {
+            background: #2ed573;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2575fc;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .edit-btn {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+
+        .close {
+            cursor: pointer;
+            font-size: 24px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>学生管理系统</h1>
+    <div class="header-buttons">
+        <button class="btn btn-secondary" onclick="location.href='/lessonEdit'">课程管理</button>
+        <button class="btn btn-secondary" onclick="location.href='/selectionEdit'">选课管理</button>
+        <button class="btn btn-secondary" onclick="location.href='/'">退出登录</button>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 添加学生卡片 -->
+    <div class="card">
+        <div class="card-header">
+            添加新学生
+        </div>
+        <div class="card-body">
+            <form id="addStudentForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">学生姓名 *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                </div>
+
+                <div id="addStudentMessage" class="message"></div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span id="addStudentText">添加学生</span>
+                    <span id="addStudentLoading" class="loading" style="display: none;"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 学生列表卡片 -->
+    <div class="card">
+        <div class="card-header">
+            学生列表
+        </div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <button onclick="loadStudents()" class="btn btn-secondary">
+                    <span id="refreshText">刷新列表</span>
+                    <span id="refreshLoading" class="loading" style="display: none;"></span>
+                </button>
+            </div>
+
+            <div id="studentListMessage" class="message"></div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>学生姓名</th>
+                        <th>创建时间</th>
+                        <th>更新时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                    <!-- 动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>确认删除</h3>
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>确定要删除学生 "<span id="deleteStudentName"></span>" 吗？</p>
+            <p class="text-muted">此操作不可撤销，所有相关的选课记录也将被删除。</p>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeDeleteModal()" class="btn btn-secondary">取消</button>
+            <button onclick="confirmDeleteStudent()" class="btn btn-danger">删除</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let students = [];
+    let studentToDelete = null;
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        loadStudents();
+
+        // 添加学生表单提交事件
+        document.getElementById('addStudentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await addStudent();
+        });
+    });
+
+    function showMessage(elementId, message, type = 'success') {
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+        element.className = `message message-${type}`;
+        element.style.display = 'block';
+
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 5000);
+    }
+
+    function showLoading(buttonId, textId, loadingId) {
+        document.getElementById(textId).style.display = 'none';
+        document.getElementById(loadingId).style.display = 'inline-block';
+    }
+
+    function hideLoading(buttonId, textId, loadingId) {
+        document.getElementById(textId).style.display = 'inline-block';
+        document.getElementById(loadingId).style.display = 'none';
+    }
+
+    async function loadStudents() {
+        showLoading('refresh', 'refreshText', 'refreshLoading');
+
+        try {
+            const response = await fetch('/studentEdit', {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                showMessage('studentListMessage', data.error, 'error');
+            } else {
+                students = data.students || data;
+                displayStudents();
+                showMessage('studentListMessage', `加载成功，共 ${students.length} 名学生`, 'success');
+            }
+        } catch (error) {
+            showMessage('studentListMessage', '网络错误：' + error.message, 'error');
+        } finally {
+            hideLoading('refresh', 'refreshText', 'refreshLoading');
+        }
+    }
+
+    function displayStudents() {
+        const tableBody = document.getElementById('studentsTableBody');
+        tableBody.innerHTML = '';
+
+        if (!students || students.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">暂无学生</td></tr>';
+        } else {
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${student.id}</td>
+                        <td>${student.name}</td>
+                        <td>${new Date(student.created_at).toLocaleString()}</td>
+                        <td>${new Date(student.updated_at).toLocaleString()}</td>
+                        <td>
+                            <div class="actions">
+                                <button onclick="editStudent(${student.id})" class="action-btn edit-btn">编辑</button>
+                                <button onclick="showDeleteModal(${student.id}, '${student.name}')" class="action-btn delete-btn">删除</button>
+                            </div>
+                        </td>
+                    `;
+                tableBody.appendChild(row);
+            });
+        }
+    }
+
+    async function addStudent() {
+        const name = document.getElementById('name').value;
+
+        if (!name) {
+            showMessage('addStudentMessage', '请输入学生姓名', 'error');
+            return;
+        }
+
+        showLoading('addStudent', 'addStudentText', 'addStudentLoading');
+
+        const studentData = {
+            name: name
+        };
+
+        try {
+            const response = await fetch('/studentEdit/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(studentData)
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                showMessage('addStudentMessage', data.error, 'error');
+            } else {
+                showMessage('addStudentMessage', '学生添加成功', 'success');
+                // 清空表单
+                document.getElementById('addStudentForm').reset();
+                // 刷新列表
+                loadStudents();
+            }
+        } catch (error) {
+            showMessage('addStudentMessage', '网络错误：' + error.message, 'error');
+        } finally {
+            hideLoading('addStudent', 'addStudentText', 'addStudentLoading');
+        }
+    }
+
+    function editStudent(studentId) {
+        const student = students.find(s => s.id === studentId);
+        if (!student) return;
+
+        alert(`编辑学生：${student.name}\n\n编辑功能需要额外实现。`);
+    }
+
+    function showDeleteModal(studentId, studentName) {
+        studentToDelete = studentId;
+        document.getElementById('deleteStudentName').textContent = studentName;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        studentToDelete = null;
+    }
+
+    async function confirmDeleteStudent() {
+        if (!studentToDelete) return;
+
+        try {
+            const response = await fetch('/studentEdit/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ID: studentToDelete })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                showMessage('studentListMessage', data.error, 'error');
+            } else {
+                showMessage('studentListMessage', '学生删除成功', 'success');
+                closeDeleteModal();
+                loadStudents();
+            }
+        } catch (error) {
+            showMessage('studentListMessage', '网络错误：' + error.message, 'error');
+        }
+    }
+
+    // 点击模态框外部关闭
+    window.onclick = function(event) {
+        const modal = document.getElementById('deleteModal');
+        if (event.target === modal) {
+            closeDeleteModal();
+        }
+    };
+</script>
+</body>
+</html>

@@ -1,22 +1,19 @@
 package main
 
 import (
-	"RedrockHomework/lesson4/controllers"
-	"RedrockHomework/lesson4/database"
-
-	"github.com/gin-gonic/gin"
+	"fmt"
+	"lesson4/DAO"
+	"lesson4/controllers"
+	"lesson4/database"
+	"lesson4/services"
 )
 
 func main() {
-	database.InitDB()
-	r := gin.Default()
-	studentController := controllers.StudentController{}
+	db := database.InitDB()
+	//test := testFunction.NewTestUserDAO(DAO.NewUserDAO(db))
+	//test.Test()
+	fmt.Println(DAO.NewSelectionDAO(db).ListSelections())
+	admCon := services.NewAdministerService(controllers.NewAdministerUser(db), controllers.NewStudentUser(db))
+	admCon.Serve()
 
-	studentRoutes := r.Group("/students")
-	{
-		studentRoutes.POST("/", studentController.CreateStudent)
-		studentRoutes.POST("/:studentId/lessons/:lessonId", studentController.SelectLesson)
-		studentRoutes.GET("/:studentId/lessons", studentController.GetStudentLessons)
-	}
-	r.Run(":8080")
 }

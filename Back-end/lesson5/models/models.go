@@ -25,7 +25,7 @@ type LESSON struct {
 	Capacity    int    `gorm:"type:int;default:30"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	Duration    string `gorm:"type:text;default:2025/1/1-2025/7/1"` //开始-结束时间
+	Duration    string `gorm:"type:text"` //开始-结束时间
 }
 type StudentLesson struct {
 	StudentID int `gorm:"primaryKey"`
