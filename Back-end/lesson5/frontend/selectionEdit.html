@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选课管理 - 选课系统</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/table.css">
+</head>
+<body>
+<div class="header">
+    <div class="logo">选课系统 - 管理员后台</div>
+    <div class="user-info">
+        <span>管理员</span>
+        <button class="btn btn-secondary" onclick="logout()">退出登录</button>
+    </div>
+</div>
+
+<div class="container">
+    <nav style="margin-bottom: 20px;">
+        <a href="/admin/lessons" class="btn btn-secondary">课程管理</a>
+        <a href="/admin/students" class="btn btn-secondary">学生管理</a>
+        <a href="/admin/selections" class="btn btn-primary">选课管理</a>
+    </nav>
+
+    <div class="table-toolbar">
+        <h2>选课管理</h2>
+        <button class="btn btn-success" onclick="openAddSelectionModal()">添加选课记录</button>
+    </div>
+
+    <div class="table-container">
+        <table class="table" id="selectionTable">
+            <thead>
+            <tr>
+                <th data-sort="id" data-field="id">ID</th>
+                <th data-sort="student_id" data-field="student_id">学生ID</th>
+                <th data-sort="student_name" data-field="student_name">学生姓名</th>
+                <th data-sort="lesson_id" data-field="lesson_id">课程ID</th>
+                <th data-sort="lesson_name" data-field="lesson_name">课程名称</th>
+                <th data-sort="created_at" data-field="created_at">选课时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- 数据将通过JS动态填充 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 添加选课记录模态框 -->
+<div id="selectionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>添加选课记录</h3>
+            <span class="close" onclick="Modal.close()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="selectionForm">
+                <div class="form-group">
+                    <label for="studentSelect">选择学生 *</label>
+                    <select id="studentSelect" name="student_id" required>
+                        <option value="">请选择学生</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="lessonSelect">选择课程 *</label>
+                    <select id="lessonSelect" name="lesson_id" required>
+                        <option value="">请选择课程</option>
+                    </select>
+                </div>
+
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="Modal.close()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/common.js"></script>
+<script src="/static/js/table.js"></script>
+<script>
+    let selectionTable;
+    let students = [];
+    let lessons = [];
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查登录状态
+        if (!Auth.isAuthenticated() || Auth.getUserRole() !== 'admin') {
+            window.location.href = '/login';
+            return;
+        }
+
+        initTable();
+        loadSelections();
+        loadStudents();
+        loadLessons();
+    });
+
+    function initTable() {
+        selectionTable = new DataTable('selectionTable', {
+            searchable: true,
+            pagination: true,
+            pageSize: 10,
+            sortable: true
+        });
+    }
+
+    async function loadSelections() {
+        try {
+            UI.showLoading();
+            const response = await API.get('/api/selections');
+
+            if (response && response.selections) {
+                const data = response.selections.map(selection => ({
+                    ...selection,
+                    actions: `
+                            <div class="table-actions">
+                                <button class="btn btn-danger btn-sm" onclick="deleteSelection(${selection.student_id}, ${selection.lesson_id})">删除</button>
+                            </div>
+                        `
+                }));
+
+                selectionTable.setData(data);
+            }
+        } catch (error) {
+            console.error('加载选课记录失败:', error);
+        } finally {
+            UI.hideLoading();
+        }
+    }
+
+    async function loadStudents() {
+        try {
+            const response = await API.get('/api/students');
+            if (response && response.students) {
+                students = response.students;
+
+                const studentSelect = document.getElementById('studentSelect');
+                studentSelect.innerHTML = '<option value="">请选择学生</option>';
+
+                students.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.id;
+                    option.textContent = `${student.name} (ID: ${student.id})`;
+                    studentSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('加载学生列表失败:', error);
+        }
+    }
+
+    async function loadLessons() {
+        try {
+            const response = await API.get('/api/lessons');
+            if (response && response.lessons) {
+                lessons = response.lessons;
+
+                const lessonSelect = document.getElementById('lessonSelect');
+                lessonSelect.innerHTML = '<option value="">请选择课程</option>';
+
+                lessons.forEach(lesson => {
+                    const option = document.createElement('option');
+                    option.value = lesson.id;
+                    option.textContent = `${lesson.name} (${lesson.code})`;
+                    lessonSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('加载课程列表失败:', error);
+        }
+    }
+
+    function openAddSelectionModal() {
+        document.getElementById('selectionForm').reset();
+        document.getElementById('selectionModal').style.display = 'block';
+    }
+
+    document.getElementById('selectionForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = {
+            student_id: parseInt(document.getElementById('studentSelect').value),
+            lesson_id: parseInt(document.getElementById('lessonSelect').value)
+        };
+
+        try {
+            UI.showLoading();
+            await API.post('/api/selections', formData);
+
+            UI.showMessage('选课记录添加成功');
+            Modal.close();
+            loadSelections();
+        } catch (error) {
+            console.error('添加选课记录失败:', error);
+        } finally {
+            UI.hideLoading();
+        }
+    });
+
+    function deleteSelection(studentId, lessonId) {
+        UI.confirm('确定要删除这条选课记录吗？', async () => {
+            try {
+                UI.showLoading();
+                await API.delete('/api/selections', {
+                    student_id: studentId,
+                    lesson_id: lessonId
+                });
+
+                UI.showMessage('选课记录删除成功');
+                loadSelections();
+            } catch (error) {
+                console.error('删除选课记录失败:', error);
+            } finally {
+                UI.hideLoading();
+            }
+        });
+    }
+
+    function logout() {
+        Auth.clearTokens();
+        window.location.href = '/login';
+    }
+
+    // 暴露函数到全局
+    window.openAddSelectionModal = openAddSelectionModal;
+    window.deleteSelection = deleteSelection;
+    window.logout = logout;
+</script>
+</body>
+</html>

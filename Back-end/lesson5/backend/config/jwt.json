@@ -1,0 +1,7 @@
+{
+  "access_secret": "let-me-persuading-for-my-and-our-life",
+  "refresh_secret": "this-secrect-is-just-designed-for-refresh-JWT,never-told-others",
+  "issuer": "lesson-select-system",
+  "access_ttl": 3600000000000,
+  "refresh_ttl": 259200000000000
+}

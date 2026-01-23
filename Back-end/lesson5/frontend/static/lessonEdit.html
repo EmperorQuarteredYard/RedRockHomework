@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程管理 - 选课系统</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/table.css">
+</head>
+<body>
+<div class="header">
+    <div class="logo">选课系统 - 管理员后台</div>
+    <div class="user-info">
+        <span>管理员</span>
+        <button class="btn btn-secondary" onclick="logout()">退出登录</button>
+    </div>
+</div>
+
+<div class="container">
+    <nav style="margin-bottom: 20px;">
+        <a href="/admin/lessons" class="btn btn-primary">课程管理</a>
+        <a href="/admin/students" class="btn btn-secondary">学生管理</a>
+        <a href="/admin/selections" class="btn btn-secondary">选课管理</a>
+    </nav>
+
+    <div class="table-toolbar">
+        <h2>课程管理</h2>
+        <button class="btn btn-success" onclick="openAddLessonModal()">新增课程</button>
+    </div>
+
+    <div class="table-container">
+        <table class="table" id="lessonTable">
+            <thead>
+            <tr>
+                <th data-sort="id" data-field="id">ID</th>
+                <th data-sort="code" data-field="code">课程代码</th>
+                <th data-sort="name" data-field="name">课程名称</th>
+                <th data-sort="credit" data-field="credit">学分</th>
+                <th data-sort="capacity" data-field="capacity">容量</th>
+                <th data-sort="duration" data-field="duration">上课时间</th>
+                <th data-sort="created_at" data-field="created_at">创建时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- 数据将通过JS动态填充 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 添加/编辑课程模态框 -->
+<div id="lessonModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3 id="modalTitle">添加课程</h3>
+            <span class="close" onclick="Modal.close()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="lessonForm">
+                <input type="hidden" id="lessonId">
+
+                <div class="form-group">
+                    <label for="code">课程代码 *</label>
+                    <input type="text" id="code" name="code" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">课程名称 *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="credit">学分</label>
+                    <input type="number" id="credit" name="credit" value="1" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">课程描述</label>
+                    <textarea id="description" name="description" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="capacity">容量</label>
+                    <input type="number" id="capacity" name="capacity" value="30" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="duration">上课时间 (格式: 周一 08:00-10:00)</label>
+                    <input type="text" id="duration" name="duration" placeholder="周一 08:00-10:00">
+                </div>
+
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="Modal.close()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/common.js"></script>
+<script src="/static/js/table.js"></script>
+<script>
+    let lessonTable;
+    let editingLessonId = null;
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查登录状态
+        if (!Auth.isAuthenticated() || Auth.getUserRole() !== 'admin') {
+            window.location.href = '/login';
+            return;
+        }
+
+        initTable();
+        loadLessons();
+    });
+
+    function initTable() {
+        lessonTable = new DataTable('lessonTable', {
+            searchable: true,
+            pagination: true,
+            pageSize: 10,
+            sortable: true
+        });
+    }
+
+    async function loadLessons() {
+        try {
+            UI.showLoading();
+            const response = await API.get('/api/lessons');
+
+            if (response && response.lessons) {
+                const data = response.lessons.map(lesson => ({
+                    ...lesson,
+                    actions: TableFormatters.actions(
+                        lesson.id,
+                        'editLesson',
+                        'deleteLesson'
+                    )
+                }));
+
+                lessonTable.setData(data);
+            }
+        } catch (error) {
+            console.error('加载课程失败:', error);
+        } finally {
+            UI.hideLoading();
+        }
+    }
+
+    function openAddLessonModal() {
+        editingLessonId = null;
+        document.getElementById('modalTitle').textContent = '添加课程';
+        document.getElementById('lessonForm').reset();
+        document.getElementById('lessonId').value = '';
+        document.getElementById('lessonModal').style.display = 'block';
+    }
+
+    function openEditLessonModal(lesson) {
+        editingLessonId = lesson.id;
+        document.getElementById('modalTitle').textContent = '编辑课程';
+        document.getElementById('lessonId').value = lesson.id;
+        document.getElementById('code').value = lesson.code || '';
+        document.getElementById('name').value = lesson.name || '';
+        document.getElementById('credit').value = lesson.credit || 1;
+        document.getElementById('description').value = lesson.description || '';
+        document.getElementById('capacity').value = lesson.capacity || 30;
+        document.getElementById('duration').value = lesson.duration || '';
+        document.getElementById('lessonModal').style.display = 'block';
+    }
+
+    document.getElementById('lessonForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = {
+            code: document.getElementById('code').value,
+            name: document.getElementById('name').value,
+            credit: parseInt(document.getElementById('credit').value),
+            description: document.getElementById('description').value,
+            capacity: parseInt(document.getElementById('capacity').value),
+            duration: document.getElementById('duration').value
+        };
+
+        try {
+            UI.showLoading();
+
+            if (editingLessonId) {
+                // 编辑课程
+                await API.put(`/api/lessons/${editingLessonId}`, formData);
+                UI.showMessage('课程更新成功');
+            } else {
+                // 添加课程
+                await API.post('/api/lessons', formData);
+                UI.showMessage('课程添加成功');
+            }
+
+            Modal.close();
+            loadLessons();
+        } catch (error) {
+            console.error('保存课程失败:', error);
+        } finally {
+            UI.hideLoading();
+        }
+    });
+
+    function editLesson(id) {
+        const lesson = lessonTable.data.find(item => item.id === id);
+        if (lesson) {
+            openEditLessonModal(lesson);
+        }
+    }
+
+    function deleteLesson(id) {
+        UI.confirm('确定要删除这个课程吗？', async () => {
+            try {
+                UI.showLoading();
+                await API.delete(`/api/lessons/${id}`);
+                UI.showMessage('课程删除成功');
+                loadLessons();
+            } catch (error) {
+                console.error('删除课程失败:', error);
+            } finally {
+                UI.hideLoading();
+            }
+        });
+    }
+
+    function logout() {
+        Auth.clearTokens();
+        window.location.href = '/login';
+    }
+
+    // 暴露函数到全局
+    window.editLesson = editLesson;
+    window.deleteLesson = deleteLesson;
+    window.openAddLessonModal = openAddLessonModal;
+    window.logout = logout;
+</script>
+</body>
+</html>

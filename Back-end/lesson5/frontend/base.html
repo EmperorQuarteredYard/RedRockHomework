@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{TITLE} - 选课系统</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/form.css">
+    <link rel="stylesheet" href="/static/css/table.css">
+    <link rel="stylesheet" href="/static/css/modal.css">
+</head>
+<body>
+<header>
+    <nav class="navbar container">
+        <a href="#" class="nav-brand" id="brandLink">选课系统</a>
+        <ul class="nav-menu" id="navMenu">
+            <!-- 导航菜单由 JavaScript 动态生成 -->
+        </ul>
+    </nav>
+</header>
+
+<main class="container">
+    <!-- 页面内容将在这里插入 -->
+    {CONTENT}
+</main>
+
+<!-- 引入公共 JavaScript -->
+<script src="/static/js/api.js"></script>
+<script src="/static/js/auth.js"></script>
+<script src="/static/js/common.js"></script>
+<script>
+    // 全局初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查认证状态
+        checkAuth();
+
+        // 更新导航
+        updateNavigation();
+
+        // 页面特定的初始化
+        if (typeof initPage === 'function') {
+            initPage();
+        }
+    });
+
+    function checkAuth() {
+        const accessToken = localStorage.getItem('access_token');
+        const userRole = localStorage.getItem('user_role');
+
+        if (!accessToken || !userRole) {
+            window.location.href = '/login';
+            return false;
+        }
+        return true;
+    }
+
+    function updateNavigation() {
+        const userRole = localStorage.getItem('user_role');
+        const navMenu = document.getElementById('navMenu');
+        const brandLink = document.getElementById('brandLink');
+
+        if (!navMenu) return;
+
+        let menuItems = '';
+
+        if (userRole === 'admin') {
+            brandLink.href = '/static/lessonEdit.html';
+            menuItems = `
+                    <li><a href="/static/lessonEdit.html" class="nav-link">课程管理</a></li>
+                    <li><a href="/static/studentEdit.html" class="nav-link">学生管理</a></li>
+                    <li><a href="/static/selectionEdit.html" class="nav-link">选课管理</a></li>
+                    <li><a href="#" onclick="logout()" class="nav-link">退出登录</a></li>
+                `;
+        } else if (userRole === 'student') {
+            brandLink.href = '/static/selectForStudent.html';
+            menuItems = `
+                    <li><a href="/static/selectForStudent.html" class="nav-link">选课</a></li>
+                    <li><a href="/static/studentLesson.html" class="nav-link">我的课程</a></li>
+                    <li><a href="#" onclick="logout()" class="nav-link">退出登录</a></li>
+                `;
+        }
+
+        navMenu.innerHTML = menuItems;
+
+        // 高亮当前页面
+        const currentPath = window.location.pathname;
+        const links = navMenu.querySelectorAll('.nav-link');
+        links.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+</script>
+
+<!-- 页面特定的 JavaScript -->
+{SCRIPT}
+</body>
+</html>

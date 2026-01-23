@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选课系统 - 登录</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <style>
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .login-title h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .login-title p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .footer-links a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <div class="login-box">
+        <div class="login-title">
+            <h2>选课系统</h2>
+            <p>请登录您的账户</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+            <button type="submit" class="login-btn">登录</button>
+
+            <div class="footer-links">
+                <p>© 2024 选课系统 - 版本 1.0</p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/static/js/common.js"></script>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const errorMessage = document.getElementById('errorMessage');
+
+        // 清除之前的错误信息
+        errorMessage.style.display = 'none';
+        errorMessage.textContent = '';
+
+        try {
+            UI.showLoading();
+
+            // 使用FormData发送请求
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // 保存token和用户信息
+                Auth.setToken(data.access_token);
+                Auth.setRefreshToken(data.refresh_token);
+                localStorage.setItem('user_role', data.role);
+
+                // 跳转到对应页面
+                window.location.href = data.redirect_url;
+            } else {
+                errorMessage.textContent = data.error || '登录失败';
+                errorMessage.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('登录错误:', error);
+            errorMessage.textContent = '网络错误，请稍后重试';
+            errorMessage.style.display = 'block';
+        } finally {
+            UI.hideLoading();
+        }
+    });
+
+    // 检查是否已登录
+    if (Auth.isAuthenticated()) {
+        const role = Auth.getUserRole();
+        if (role === 'admin') {
+            window.location.href = '/admin/lessons';
+        } else if (role === 'student') {
+            window.location.href = '/student/lessons';
+        }
+    }
+
+    // 回车键提交
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const form = document.getElementById('loginForm');
+            if (form) {
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.click();
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>
