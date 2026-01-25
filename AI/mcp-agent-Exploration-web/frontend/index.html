@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务拆解AI助手</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      color: white;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h2 {
+      color: #333;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #667eea;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e1e1e1;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      background: linear-gradient(to right, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .result h3 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .task-step {
+      background: white;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .step-title {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .step-time {
+      color: #667eea;
+      font-weight: 500;
+    }
+
+    .step-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .tool-tag {
+      background: #e9ecef;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #495057;
+    }
+
+    .chat-message {
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .user-message {
+      background: #e3f2fd;
+      margin-left: 20px;
+    }
+
+    .assistant-message {
+      background: #f3e5f5;
+      margin-right: 20px;
+    }
+
+    .message-sender {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .status-healthy {
+      background: #4caf50;
+    }
+
+    .status-unhealthy {
+      background: #f44336;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .error {
+      color: #f44336;
+      background: #ffebee;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .success {
+      color: #4caf50;
+      background: #e8f5e8;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .system-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .info-item {
+      text-align: center;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🤖 任务拆解AI助手</h1>
+    <p>使用AI智能拆解复杂任务，预估时间成本</p>
+  </header>
+
+  <div class="app">
+    <!-- 左侧：任务拆解和状态 -->
+    <div class="card">
+      <h2>任务拆解</h2>
+      <div class="form-group">
+        <label for="taskDescription">任务描述</label>
+        <textarea id="taskDescription" placeholder="请输入需要拆解的任务，例如：'开发一个简单的待办事项应用'"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="maxSteps">最大拆解步骤</label>
+        <input type="number" id="maxSteps" value="5" min="1" max="20">
+      </div>
+      <div class="form-group">
+        <label for="complexityLevel">复杂度级别</label>
+        <select id="complexityLevel">
+          <option value="auto">自动判断</option>
+          <option value="simple">简单</option>
+          <option value="medium" selected>中等</option>
+          <option value="complex">复杂</option>
+        </select>
+      </div>
+      <button onclick="decomposeTask()">开始拆解任务</button>
+      <div id="decomposeResult" class="result"></div>
+    </div>
+
+    <!-- 右侧：聊天和工具 -->
+    <div class="card">
+      <h2>AI助手对话</h2>
+      <div class="form-group">
+        <label for="chatMessage">输入消息</label>
+        <textarea id="chatMessage" placeholder="向AI助手提问..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="conversationId">会话ID（可选）</label>
+        <input type="text" id="conversationId" placeholder="留空则创建新会话">
+      </div>
+      <button onclick="sendChat()">发送消息</button>
+      <div id="chatResult" class="result"></div>
+    </div>
+
+    <!-- 下方：系统状态和工具 -->
+    <div class="card">
+      <h2>系统状态</h2>
+      <div class="form-group">
+        <button onclick="checkHealth()">检查健康状态</button>
+        <button onclick="getAgentStatus()">获取Agent状态</button>
+        <button onclick="getTools()">获取工具列表</button>
+        <button onclick="quickEstimate()">快速时间估算</button>
+      </div>
+      <div id="systemResult" class="result"></div>
+    </div>
+
+    <div class="card">
+      <h2>任务管理</h2>
+      <div class="form-group">
+        <label for="taskId">任务ID</label>
+        <input type="text" id="taskId" placeholder="输入任务ID查看详情">
+      </div>
+      <button onclick="getTask()">获取任务详情</button>
+      <div id="taskResult" class="result"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:8080/api';
+
+  // 通用请求函数
+  async function makeRequest(endpoint, method = 'GET', data = null) {
+    const url = `${API_BASE}${endpoint}`;
+    const options = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+
+    if (data && (method === 'POST' || method === 'PUT')) {
+      options.body = JSON.stringify(data);
+    }
+
+    try {
+      const response = await fetch(url, options);
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '请求失败');
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error('请求失败:', error);
+      throw error;
+    }
+  }
+
+  // 显示加载状态
+  function showLoading(containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '<div class="loading">加载中...</div>';
+  }
+
+  // 显示错误
+  function showError(containerId, error) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = `<div class="error">错误: ${error.message}</div>`;
+  }
+
+  // 任务拆解
+  async function decomposeTask() {
+    const taskDescription = document.getElementById('taskDescription').value.trim();
+    const maxSteps = parseInt(document.getElementById('maxSteps').value);
+    const complexityLevel = document.getElementById('complexityLevel').value;
+
+    if (!taskDescription) {
+      alert('请输入任务描述');
+      return;
+    }
+
+    showLoading('decomposeResult');
+
+    try {
+      const data = {
+        task_description: taskDescription,
+        max_steps: maxSteps,
+        include_tools: true,
+        complexity_level: complexityLevel
+      };
+
+      const result = await makeRequest('/decompose', 'POST', data);
+      displayDecomposeResult(result);
+    } catch (error) {
+      showError('decomposeResult', error);
+    }
+  }
+
+  // 显示拆解结果
+  function displayDecomposeResult(result) {
+    const container = document.getElementById('decomposeResult');
+    let html = `
+                <div class="success">
+                    <h3>任务拆解完成</h3>
+                    <p>任务ID: ${result.task_id}</p>
+                    <p>总耗时: ${result.total_hours} 小时 (${result.total_minutes} 分钟)</p>
+                    <p>预计完成时间: ${new Date(result.estimated_completion).toLocaleString()}</p>
+                </div>
+            `;
+
+    result.steps.forEach(step => {
+      html += `
+                    <div class="task-step">
+                        <div class="step-header">
+                            <div class="step-title">步骤 ${step.step_number}: ${step.description}</div>
+                            <div class="step-time">${step.estimated_minutes} 分钟</div>
+                        </div>
+                        <div>复杂度: ${step.complexity}</div>
+                        <div class="step-tools">
+                            ${step.tools_needed.map(tool => `<span class="tool-tag">${tool}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+    });
+
+    container.innerHTML = html;
+
+    // 自动填充任务ID输入框
+    document.getElementById('taskId').value = result.task_id;
+  }
+
+  // 获取任务详情
+  async function getTask() {
+    const taskId = document.getElementById('taskId').value.trim();
+
+    if (!taskId) {
+      alert('请输入任务ID');
+      return;
+    }
+
+    showLoading('taskResult');
+
+    try {
+      const result = await makeRequest(`/task/${taskId}`, 'GET');
+      displayTaskResult(result);
+    } catch (error) {
+      showError('taskResult', error);
+    }
+  }
+
+  // 显示任务结果
+  function displayTaskResult(result) {
+    const container = document.getElementById('taskResult');
+    container.innerHTML = `
+                <h3>任务详情</h3>
+                <p><strong>原始任务:</strong> ${result.original_task}</p>
+                <p><strong>创建时间:</strong> ${new Date(result.created_at).toLocaleString()}</p>
+                <p><strong>总耗时:</strong> ${result.total_hours} 小时</p>
+            `;
+  }
+
+  // 发送聊天消息
+  async function sendChat() {
+    const message = document.getElementById('chatMessage').value.trim();
+    const conversationId = document.getElementById('conversationId').value.trim();
+
+    if (!message) {
+      alert('请输入消息内容');
+      return;
+    }
+
+    showLoading('chatResult');
+
+    try {
+      const data = {
+        message,
+        conversation_id: conversationId || undefined,
+        use_history: true
+      };
+
+      const result = await makeRequest('/chat', 'POST', data);
+      displayChatResult(message, result);
+    } catch (error) {
+      showError('chatResult', error);
+    }
+  }
+
+  // 显示聊天结果
+  function displayChatResult(userMessage, result) {
+    const container = document.getElementById('chatResult');
+    const timestamp = new Date(result.timestamp).toLocaleTimeString();
+
+    let html = container.innerHTML;
+
+    if (userMessage) {
+      html += `
+                    <div class="chat-message user-message">
+                        <div class="message-sender">你</div>
+                        <div>${userMessage}</div>
+                    </div>
+                `;
+    }
+
+    html += `
+                <div class="chat-message assistant-message">
+                    <div class="message-sender">AI助手</div>
+                    <div>${result.response}</div>
+                    <div style="font-size: 12px; color: #777; margin-top: 5px;">
+                        处理时间: ${result.processing_time}ms | ${timestamp}
+                    </div>
+                </div>
+            `;
+
+    container.innerHTML = html;
+    container.scrollTop = container.scrollHeight;
+
+    // 自动填充会话ID
+    if (result.conversation_id && !document.getElementById('conversationId').value) {
+      document.getElementById('conversationId').value = result.conversation_id;
+    }
+
+    // 清空输入框
+    document.getElementById('chatMessage').value = '';
+  }
+
+  // 快速时间估算
+  async function quickEstimate() {
+    const task = document.getElementById('taskDescription').value.trim();
+
+    if (!task) {
+      alert('请输入任务描述');
+      return;
+    }
+
+    const complexity = document.getElementById('complexityLevel').value;
+
+    showLoading('systemResult');
+
+    try {
+      const result = await makeRequest(`/estimate?task=${encodeURIComponent(task)}&complexity=${complexity}`, 'POST');
+      displayQuickEstimateResult(task, result);
+    } catch (error) {
+      showError('systemResult', error);
+    }
+  }
+
+  // 显示快速估算结果
+  function displayQuickEstimateResult(task, result) {
+    const container = document.getElementById('systemResult');
+    container.innerHTML = `
+                <h3>快速时间估算</h3>
+                <p><strong>任务:</strong> ${task}</p>
+                <div class="success">${JSON.stringify(result, null, 2)}</div>
+            `;
+  }
+
+  // 检查健康状态
+  async function checkHealth() {
+    showLoading('systemResult');
+
+    try {
+      const response = await fetch('http://localhost:8080/health');
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error('健康检查失败');
+      }
+
+      const { health, system } = result.data;
+
+      let html = `
+                    <h3>系统健康状态</h3>
+                    <div class="success">
+                        <span class="status-indicator status-healthy"></span>
+                        状态: ${health.status}
+                        <div>版本: ${health.version}</div>
+                        <div>运行时间: ${health.uptime}</div>
+                    </div>
+                    <div class="system-info">
+                `;
+
+      // 添加系统信息
+      for (const [key, value] of Object.entries(system)) {
+        html += `
+                        <div class="info-item">
+                            <div class="info-label">${key.replace(/_/g, ' ')}</div>
+                            <div class="info-value">${typeof value === 'number' ? value.toFixed(2) : value}</div>
+                        </div>
+                    `;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    } catch (error) {
+      showError('systemResult', error);
+    }
+  }
+
+  // 获取Agent状态
+  async function getAgentStatus() {
+    showLoading('systemResult');
+
+    try {
+      const result = await makeRequest('/status', 'GET');
+      displayAgentStatus(result);
+    } catch (error) {
+      showError('systemResult', error);
+    }
+  }
+
+  // 显示Agent状态
+  function displayAgentStatus(status) {
+    const container = document.getElementById('systemResult');
+    const startedAt = new Date(status.started_at).toLocaleString();
+
+    container.innerHTML = `
+                <h3>Agent状态</h3>
+                <div class="success">
+                    <p><strong>模型:</strong> ${status.model_name}</p>
+                    <p><strong>状态:</strong> ${status.status}</p>
+                    <p><strong>Ollama状态:</strong> ${status.ollama_status}</p>
+                    <p><strong>启动时间:</strong> ${startedAt}</p>
+                    <p><strong>请求次数:</strong> ${status.requests_count}</p>
+                    <p><strong>可用工具:</strong> ${status.tools_available.join(', ')}</p>
+                </div>
+            `;
+  }
+
+  // 获取工具列表
+  async function getTools() {
+    showLoading('systemResult');
+
+    try {
+      const result = await makeRequest('/tools', 'GET');
+      displayTools(result);
+    } catch (error) {
+      showError('systemResult', error);
+    }
+  }
+
+  // 显示工具列表
+  function displayTools(tools) {
+    const container = document.getElementById('systemResult');
+    let html = '<h3>可用工具</h3>';
+
+    tools.forEach(tool => {
+      html += `
+                    <div class="task-step">
+                        <div class="step-header">
+                            <div class="step-title">${tool.name}</div>
+                        </div>
+                        <div>${tool.description}</div>
+                    </div>
+                `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  // 初始化
+  document.addEventListener('DOMContentLoaded', () => {
+    // 检查服务是否可用
+    checkHealth();
+  });
+</script>
+</body>
+</html>
