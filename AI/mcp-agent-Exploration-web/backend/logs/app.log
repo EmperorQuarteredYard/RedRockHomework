@@ -1,0 +1,4 @@
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 22:13:33.598","caller":"runtime/proc.go:285","msg":"启动 LLM Agent 后端服务","version":"1.0.0","build":"dev","mode":"debug"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 22:13:33.612","caller":"runtime/asm_amd64.s:1693","msg":"服务器启动","address":"0.0.0.0:8080","mode":"debug"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 22:13:40.872","caller":"runtime/proc.go:285","msg":"正在关闭服务器..."}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 22:13:40.874","caller":"runtime/proc.go:285","msg":"服务器已关闭"}

@@ -1,0 +1,40 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  mode: "debug"
+  shutdown_timeout: 30
+  read_timeout: 30
+  write_timeout: 30
+  idle_timeout: 120
+
+database:
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "password"
+  name: "llm_agent"
+  ssl_mode: "disable"
+
+ollama:
+  base_url: "http://localhost:11434"
+  model_name: "qwen2.5:7b"
+  timeout: 120
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+
+log:
+  level: "info"
+  file: "logs/app.log"
+  max_size: 100
+  max_age: 30
+  compress: true
+
+agent:
+  max_steps: 10
+  max_task_length: 1000
+  default_complexity: "medium"
+  task_ttl: 24h
