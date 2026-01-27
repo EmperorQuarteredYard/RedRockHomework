@@ -62,6 +62,14 @@ func (u *AdministerUser) Login(userName, password string) (int64, error) {
 	return 0, nil
 }
 
+func (u *AdministerUser) GetUser(userName, password string) (*models.User, error) {
+	user, err := u.UserDAO.GetUser(userName, password)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 func (u *AdministerUser) ListSelection() (selections *[]models.Selection, err error) {
 	selections, err = u.SelectionDAO.ListSelections()
 	return

@@ -76,14 +76,28 @@ func (s *PublicService) registerPublicRoutes() {
 			return
 		}
 
-		// 根据用户名获取用户ID（这里需要根据实际情况调整）
-		userID := uint64(1) // 临时值，实际应从数据库获取
-
-		// 生成JWT token
-		roleStr := "student"
-		if role > 1 {
-			roleStr = "admin"
+		user, err := s.administerUser.GetUser(username, password)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid credentials",
+			})
+			return
 		}
+
+		var roleStr string
+		// 生成JWT token
+		if role == 0 {
+			c.AbortWithStatusJSON(http.StatusExpectationFailed, gin.H{"error": "authority not exist"})
+			return
+		} else if role == 4 {
+			roleStr = "administrator"
+		} else if role == 2 {
+			roleStr = "teacher"
+		} else {
+			roleStr = "student"
+		}
+
+		userID := uint64(user.ID)
 
 		accessToken, refreshToken, err := lessonSelectJWT.GenerateToken(userID, roleStr)
 		if err != nil {

@@ -158,7 +158,7 @@ func stripBearer(s string) string {
 	return strings.TrimSpace(s)
 }
 
-// JWT 认证中间件
+// JWTAuthMiddleware JWT 认证中间件
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -184,7 +184,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-// 角色检查中间件
+// RoleMiddleware 角色检查中间件
 func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userInterface, exists := c.Get("user")
@@ -220,7 +220,7 @@ func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	}
 }
 
-// 从上下文获取用户信息
+// GetUserFromContext 从上下文获取用户信息
 func GetUserFromContext(c *gin.Context) (*AuthUser, error) {
 	userInterface, exists := c.Get("user")
 	if !exists {

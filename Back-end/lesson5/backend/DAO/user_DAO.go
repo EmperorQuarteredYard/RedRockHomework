@@ -67,3 +67,22 @@ func (d *UserDAO) VerifyUser(userName, password string) (string, error) {
 
 	return user.Role, nil
 }
+
+func (d *UserDAO) GetUser(userName, password string) (*models.User, error) {
+	var user models.User
+
+	err := d.
+		db.
+		Where("name = ?", userName).
+		First(&user).
+		Error
+	if err != nil {
+		return nil, err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
