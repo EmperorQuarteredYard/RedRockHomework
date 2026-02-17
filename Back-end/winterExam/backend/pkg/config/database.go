@@ -1,9 +1,9 @@
-package database
+package config
 
 import (
 	"encoding/json"
 	"fmt"
-	"homworkSystem/backend/internal/models"
+	"homeworkSystem/backend/internal/models"
 	"os"
 
 	"gorm.io/driver/mysql"
