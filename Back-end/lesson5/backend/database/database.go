@@ -15,11 +15,11 @@ var (
 )
 
 type databaseConfig struct {
-	USERNAME string
-	PASSWORD string
-	DATABASE string
-	PORT     string
-	HOST     string
+	USERNAME string `json:"username"`
+	PASSWORD string `json:"password"`
+	DATABASE string `json:"database"`
+	PORT     string `json:"port"`
+	HOST     string `json:"host"`
 }
 
 func getConfig() (*databaseConfig, error) {

@@ -44,3 +44,18 @@
 {"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:10:23.721","caller":"runtime/proc.go:285","msg":"正在关闭服务器..."}
 {"level":"\u001b[31mERROR\u001b[0m","time":"2026-01-25 23:10:53.723","caller":"runtime/proc.go:285","msg":"服务器关闭失败","error":"context deadline exceeded"}
 {"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:10:53.723","caller":"runtime/proc.go:285","msg":"服务器已关闭"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:25:24.623","caller":"runtime/proc.go:285","msg":"启动 LLM Agent 后端服务","version":"1.0.0","build":"dev","mode":"debug"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:25:24.637","caller":"runtime/asm_amd64.s:1693","msg":"服务器启动","address":"0.0.0.0:8080","mode":"debug"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:25:38.591","caller":"gin@v1.11.0/context.go:192","msg":"请求处理完成","status":200,"method":"GET","path":"/health","ip":"::1","latency":1.0006752,"user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:26:05.567","caller":"gin@v1.11.0/context.go:192","msg":"请求处理完成","status":204,"method":"OPTIONS","path":"/api/decompose","ip":"::1","latency":0,"user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:26:05.568","caller":"gin@v1.11.0/context.go:192","msg":"处理任务拆解请求","task":"开发一个简单的待办事项应用","max_steps":5}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:26:05.568","caller":"handlers/agent.go:105","msg":"开始拆解任务","task":"开发一个简单的待办事项应用","max_steps":5}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:27:17.073","caller":"handlers/agent.go:105","msg":"任务拆解完成","task_id":"task_1769354837072604200","steps":4,"total_minutes":135,"processing_time_ms":71504}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:27:17.073","caller":"gin@v1.11.0/context.go:192","msg":"请求处理完成","status":200,"method":"POST","path":"/api/decompose","ip":"::1","latency":71.5047795,"user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:27:17.075","caller":"gin@v1.11.0/context.go:192","msg":"处理任务拆解请求","task":"开发一个简单的待办事项应用","max_steps":5}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:27:17.076","caller":"handlers/agent.go:105","msg":"开始拆解任务","task":"开发一个简单的待办事项应用","max_steps":5}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:28:05.699","caller":"handlers/agent.go:105","msg":"任务拆解完成","task_id":"task_1769354885699144300","steps":4,"total_minutes":135,"processing_time_ms":48623}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:28:05.699","caller":"gin@v1.11.0/context.go:192","msg":"请求处理完成","status":200,"method":"POST","path":"/api/decompose","ip":"::1","latency":48.6252292,"user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:28:54.425","caller":"gin@v1.11.0/context.go:192","msg":"请求处理完成","status":200,"method":"GET","path":"/health","ip":"::1","latency":1.0015881,"user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-26 00:11:41.714","caller":"runtime/proc.go:285","msg":"正在关闭服务器..."}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-26 00:11:41.716","caller":"runtime/proc.go:285","msg":"服务器已关闭"}
