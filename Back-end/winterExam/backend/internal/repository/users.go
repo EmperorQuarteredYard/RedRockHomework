@@ -2,9 +2,10 @@ package repository
 
 import (
 	"errors"
+	"homeworkSystem/backend/internal/models"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"homeworkSystem/backend/internal/models"
 )
 
 type UserRepo struct {
@@ -47,7 +48,7 @@ func (r *UserRepo) SoftDelete(id uint64) error {
 	return r.db.Delete(&models.User{}, id).Error
 }
 
-// 验证密码
+// ComparePassword 验证密码
 func (r *UserRepo) ComparePassword(hashedPwd, plainPwd string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(plainPwd))
 }

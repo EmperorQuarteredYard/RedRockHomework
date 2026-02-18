@@ -59,3 +59,7 @@
 {"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-25 23:28:54.425","caller":"gin@v1.11.0/context.go:192","msg":"请求处理完成","status":200,"method":"GET","path":"/health","ip":"::1","latency":1.0015881,"user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0"}
 {"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-26 00:11:41.714","caller":"runtime/proc.go:285","msg":"正在关闭服务器..."}
 {"level":"\u001b[34mINFO\u001b[0m","time":"2026-01-26 00:11:41.716","caller":"runtime/proc.go:285","msg":"服务器已关闭"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-02-18 18:23:11.736","caller":"runtime/proc.go:285","msg":"启动 LLM Agent 后端服务","version":"1.0.0","build":"dev","mode":"debug"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-02-18 18:23:11.746","caller":"runtime/asm_amd64.s:1693","msg":"服务器启动","address":"0.0.0.0:8080","mode":"debug"}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-02-18 18:27:27.054","caller":"runtime/proc.go:285","msg":"正在关闭服务器..."}
+{"level":"\u001b[34mINFO\u001b[0m","time":"2026-02-18 18:27:27.054","caller":"runtime/proc.go:285","msg":"服务器已关闭"}

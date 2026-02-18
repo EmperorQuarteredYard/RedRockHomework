@@ -68,7 +68,6 @@ func (s *Service) ReviewSubmission(reviewer *models.User, submissionID uint64, s
 	if reviewer.Role != models.RoleAdmin {
 		return nil, repository.ErrInsufficientPermissions
 	}
-	// 需要通过 homework 获取部门
 	homework, err := s.assignmentRepo.FindByID(submission.HomeworkID)
 	if err != nil {
 		return nil, err
@@ -77,13 +76,14 @@ func (s *Service) ReviewSubmission(reviewer *models.User, submissionID uint64, s
 		return nil, repository.ErrDepartmentNotMatch
 	}
 
-	submission.Score = score
-	submission.Comment = comment
-	submission.IsExcellent = isExcellent
-	submission.ReviewerID = reviewer.ID
-	submission.ReviewedAt = time.Now()
-
-	if err := s.submissionRepo.Update(submission); err != nil {
+	submission, err = s.submissionRepo.UpdateByMap(submissionID, map[string]interface{}{
+		"is_excellent": isExcellent,
+		"reviewed_at":  time.Now(),
+		"reviewer_id":  reviewer.ID,
+		"score":        score,
+		"comment":      comment,
+	})
+	if err != nil {
 		return nil, err
 	}
 	return submission, nil
@@ -106,13 +106,15 @@ func (s *Service) MarkExcellent(reviewer *models.User, submissionID uint64, isEx
 		return nil, repository.ErrDepartmentNotMatch
 	}
 
-	submission.IsExcellent = isExcellent
-	submission.ReviewerID = reviewer.ID
-	submission.ReviewedAt = time.Now()
-
-	if err := s.submissionRepo.Update(submission); err != nil {
+	submission, err = s.submissionRepo.UpdateByMap(submissionID, map[string]interface{}{
+		"is_excellent": isExcellent,
+		"reviewed_at":  time.Now(),
+		"reviewer_id":  reviewer.ID,
+	})
+	if err != nil {
 		return nil, err
 	}
+
 	return submission, nil
 }
 

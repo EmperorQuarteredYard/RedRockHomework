@@ -1,10 +1,9 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"homeworkSystem/backend/internal/models"
 	"homeworkSystem/backend/internal/service"
-	"homeworkSystem/backend/pkg/errcode"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UserController struct {

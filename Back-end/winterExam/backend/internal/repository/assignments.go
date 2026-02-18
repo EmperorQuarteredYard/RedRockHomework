@@ -32,6 +32,7 @@ func (r *AssignmentRepo) FindByID(id uint64) (*models.Assignment, error) {
 	return &assignment, nil
 }
 
+// ListByDepartment 当department为空时，返回所有记录；否则，返回department对应的记录
 func (r *AssignmentRepo) ListByDepartment(department string, page, pageSize int) ([]models.Assignment, int64, error) {
 	var list []models.Assignment
 	var total int64
@@ -47,9 +48,43 @@ func (r *AssignmentRepo) ListByDepartment(department string, page, pageSize int)
 	return list, total, err
 }
 
-// Update 带乐观锁并发控制
+// Update 使用事务锁处理并发
 func (r *AssignmentRepo) Update(assignment *models.Assignment) error {
-	return r.db.Model(assignment).Clauses(clause.Returning{}).Updates(assignment).Error
+	var assignments models.Assignment
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&assignments).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&models.Assignment{}).Updates(assignment).Error; err != nil {
+			return err
+		}
+		if err := tx.First(assignment, assignment.ID).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}
+
+// UpdateByMap 使用悲观锁更新作业字段
+func (r *AssignmentRepo) UpdateByMap(id uint64, updates map[string]interface{}) (*models.Assignment, error) {
+	var assignment models.Assignment
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&assignment, id).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&assignment).Updates(updates).Error; err != nil {
+			return err
+		}
+		if err := tx.First(&assignment, id).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &assignment, nil
 }
 
 func (r *AssignmentRepo) Delete(id uint64) error {

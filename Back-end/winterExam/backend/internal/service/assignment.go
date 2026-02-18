@@ -42,7 +42,6 @@ func (s *Service) GetAssignmentDetail(id uint64) (*models.Assignment, error) {
 }
 
 func (s *Service) UpdateAssignment(updater *models.User, id uint64, updates map[string]interface{}) (*models.Assignment, error) {
-	// 获取原作业
 	assignment, err := s.assignmentRepo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -56,12 +55,11 @@ func (s *Service) UpdateAssignment(updater *models.User, id uint64, updates map[
 		return nil, repository.ErrDepartmentNotMatch
 	}
 
-	// 执行更新（带乐观锁，由 repository 处理）
-	// 注意：updates 只包含允许修改的字段，由 controller 层过滤
-	if err := s.assignmentRepo.Update(assignment); err != nil {
+	updatedAssignment, err := s.assignmentRepo.UpdateByMap(id, updates)
+	if err != nil {
 		return nil, err
 	}
-	return assignment, nil
+	return updatedAssignment, nil
 }
 
 func (s *Service) DeleteAssignment(deleter *models.User, id uint64) error {

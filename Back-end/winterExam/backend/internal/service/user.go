@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"homeworkSystem/backend/internal/models"
 	"homeworkSystem/backend/internal/repository"
 	jwt "homeworkSystem/backend/pkg/jwt"
@@ -18,7 +19,7 @@ func (s *Service) Register(username, password, nickname, department string) (*mo
 	_, err := s.userRepo.FindByUsername(username)
 	if err == nil {
 		return nil, repository.ErrDuplicateEntry
-	} else if err != repository.ErrNotFound {
+	} else if !errors.Is(err, repository.ErrNotFound) {
 		return nil, err
 	}
 
