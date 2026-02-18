@@ -2,6 +2,6 @@
   "host": "localhost",
   "port": "3306",
   "username": "RedRockServe1",
-  "password": "RedRockOrgnization",
-  "database": "RedRockWinterExam"
+  "password": "RedRockOrganization",
+  "database": "redrocklesson03"
 }

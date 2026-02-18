@@ -3,6 +3,7 @@ package WEjwt
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
@@ -37,6 +38,7 @@ type AuthUser struct {
 	UserID     uint64 `json:"user_id"`
 	Role       string `json:"role"`
 	Department string `json:"department"`
+	//Nickname   string `json:"nickname"` 不加了要改好多石山
 }
 
 var once sync.Once
@@ -66,35 +68,17 @@ func getConfig() (err error) {
 	return err
 }
 
-func GenerateToken(userID uint64, role string) (accessToken string, refreshToken string, err error) {
+func GenerateRefreshToken(userID uint64, department, role string) (token string, err error) {
 	err = getConfig()
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	now := time.Now()
-	accessClaims := CustomClaims{
-		UserID: userID,
-		Role:   role,
-		Type:   "access",
-		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    config.Issuer,
-			Subject:   fmt.Sprintf("%d", userID),
-			Audience:  []string{"user"},
-			ExpiresAt: jwt.NewNumericDate(now.Add(config.AccessTTL)),
-			NotBefore: jwt.NewNumericDate(now.Add(-5 * time.Second)),
-			IssuedAt:  jwt.NewNumericDate(now),
-		},
-	}
-	accessTok := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
-	accessToken, err = accessTok.SignedString([]byte(config.AccessSecret))
-	if err != nil {
-		return "", "", err
-	}
-
 	refreshClaims := CustomClaims{
-		UserID: userID,
-		Role:   role,
-		Type:   "refresh",
+		UserID:     userID,
+		Department: department,
+		Role:       role,
+		Type:       "refresh",
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    config.Issuer,
 			Subject:   fmt.Sprintf("%d", userID),
@@ -105,14 +89,62 @@ func GenerateToken(userID uint64, role string) (accessToken string, refreshToken
 		},
 	}
 	refreshTok := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
-	refreshToken, err = refreshTok.SignedString([]byte(config.RefreshSecret))
+	token, err = refreshTok.SignedString([]byte(config.RefreshSecret))
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func GenerateAccessToken(userID uint64, department, role string) (token string, err error) {
+	err = getConfig()
+	if err != nil {
+		return "", err
+	}
+	now := time.Now()
+	accessClaims := CustomClaims{
+		UserID:     userID,
+		Department: department,
+		Role:       role,
+		Type:       "access",
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    config.Issuer,
+			Subject:   fmt.Sprintf("%d", userID),
+			Audience:  []string{"user"},
+			ExpiresAt: jwt.NewNumericDate(now.Add(config.AccessTTL)),
+			NotBefore: jwt.NewNumericDate(now.Add(-5 * time.Second)),
+			IssuedAt:  jwt.NewNumericDate(now),
+		},
+	}
+	accessTok := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	token, err = accessTok.SignedString([]byte(config.AccessSecret))
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func GenerateToken(userID uint64, department, role string) (accessToken string, refreshToken string, err error) {
+	refreshToken, err = GenerateRefreshToken(userID, department, role)
 	if err != nil {
 		return "", "", err
 	}
-	return
+
+	accessToken, err = GenerateAccessToken(userID, department, role)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
 }
 
 func VerifyAccessToken(accessToken string) (claims *CustomClaims, err error) {
+	if !configInitialized {
+		err = getConfig()
+		if err != nil {
+			return nil, err
+		}
+	}
 	raw := stripBearer(accessToken)
 	token, err := jwt.ParseWithClaims(raw, &CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok || t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
@@ -134,6 +166,12 @@ func VerifyAccessToken(accessToken string) (claims *CustomClaims, err error) {
 }
 
 func VerifyRefreshToken(refreshToken string) (claims *CustomClaims, err error) {
+	if !configInitialized {
+		err = getConfig()
+		if err != nil {
+			return nil, err
+		}
+	}
 	raw := stripBearer(refreshToken)
 	token, err := jwt.ParseWithClaims(raw, &CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -166,15 +204,20 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(401, gin.H{"error": "Authorization header required"})
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"message": "Authorization header required",
+				"code":    StatusMissedToken,
+				"data":    nil,
+			})
 			return
 		}
 
 		claims, err := VerifyAccessToken(authHeader)
 		if err != nil {
-			c.JSON(401, gin.H{"error": "Invalid token", "details": err.Error()})
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"message": "Invalid token",
+				"code":    StatusInvalidToken,
+				"data":    nil})
 			return
 		}
 
@@ -193,15 +236,21 @@ func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userInterface, exists := c.Get("user")
 		if !exists {
-			c.JSON(401, gin.H{"error": "User not authenticated"})
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"code":    StatusUserNotAuthenticated,
+				"message": "User not authenticated",
+				"data":    nil,
+			})
 			return
 		}
 
 		user, ok := userInterface.(*AuthUser)
 		if !ok {
-			c.JSON(401, gin.H{"error": "Invalid user data"})
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"code":    StatusInvalidUserData,
+				"message": "Invalid user data",
+				"data":    nil,
+			})
 			return
 		}
 
@@ -215,7 +264,11 @@ func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 		}
 
 		if !roleAllowed {
-			c.JSON(403, gin.H{"error": "Insufficient permissions"})
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Insufficient permissions",
+				"code":    StatusInsufficientPermissions,
+				"data":    nil,
+			})
 			c.Abort()
 			return
 		}

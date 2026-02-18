@@ -39,7 +39,7 @@ func (d *AssignmentDAO) FindByDepartment(page, pageSize int, department string) 
 }
 
 // FindByID 查询单个作业详情，不作任何检查
-func (d *AssignmentDAO) FindByID(id int64) (*models.Assignment, error) {
+func (d *AssignmentDAO) FindByID(id uint64) (*models.Assignment, error) {
 	result := &models.Assignment{}
 	err := d.db.First(result, id).Error
 	if err != nil {
@@ -49,7 +49,7 @@ func (d *AssignmentDAO) FindByID(id int64) (*models.Assignment, error) {
 }
 
 // Update 修改作业，检查部门、是否为老资历(已经出现了old light，老登，老资历三个称呼了hh)
-func (d *AssignmentDAO) Update(Updater *models.User, newOne models.Assignment) (err error) {
+func (d *AssignmentDAO) Update(Updater *models.User, newOne *models.Assignment) (err error) {
 	var ass *models.Assignment
 	if Updater.Role != models.RoleOldLight {
 		return errors.New(ErrorInsufficientPermissions)
@@ -59,7 +59,7 @@ func (d *AssignmentDAO) Update(Updater *models.User, newOne models.Assignment) (
 	if err != nil {
 		return err
 	}
-	if newOne.Department != Updater.Department {
+	if ass.Department != Updater.Department {
 		return errors.New(ErrorDepartmentNotMatch)
 	}
 	err = d.db.Model(&models.Assignment{}).Where("id = ?", newOne.ID).Updates(newOne).Error
@@ -67,7 +67,7 @@ func (d *AssignmentDAO) Update(Updater *models.User, newOne models.Assignment) (
 }
 
 // Delete 删除作业，检查部门、是否为老资历
-func (d *AssignmentDAO) Delete(deleter *models.User, id int64) (err error) {
+func (d *AssignmentDAO) Delete(deleter *models.User, id uint64) (err error) {
 	if deleter.Role != models.RoleOldLight {
 		return errors.New(ErrorInsufficientPermissions)
 	}

@@ -17,7 +17,7 @@ func NewUserDao(db *gorm.DB) *UserDao {
 	}
 }
 
-func (d *UserDao) Register(userName, password, role, department string) (user *models.User, err error) {
+func (d *UserDao) Register(userName, password, department, nickname, role string) (user *models.User, err error) {
 	_, err = models.GetDepartment(department)
 	if err != nil {
 		return nil, err
@@ -32,6 +32,7 @@ func (d *UserDao) Register(userName, password, role, department string) (user *m
 		PasswordHash: string(hash),
 		Role:         role,
 		Department:   department,
+		Nickname:     nickname,
 	}
 	err = d.db.Create(user).Error
 	if err != nil {
@@ -53,12 +54,20 @@ func (d *UserDao) Login(userName, password string) (user *models.User, err error
 	return user, nil
 }
 
-func (d *UserDao) SoftDelete(userID string) error {
-	result := d.db.Delete(&models.User{}, userID)
-	if result.Error != nil {
-		return result.Error
+func (d *UserDao) SoftDelete(userID uint64, password string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	user := &models.User{}
+	err = d.db.Where("id = ?", userID).First(user).Error
+	if err != nil {
+		return err
 	}
-	return nil
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return err
+	}
+
+	return d.db.Where("id = ? and password_hash = ?", userID, hash).Delete(&models.User{}).Error
 }
 
 func (d *UserDao) FindByID(ID uint64) (*models.User, error) {
