@@ -17,7 +17,7 @@ func main() {
 	r := router.SetupRouter(db)
 
 	// 启动服务
-	if err := r.Run(":8080"); err != nil {
+	if err := r.Run(":51443"); err != nil {
 		log.Fatal("服务器启动失败:", err)
 	}
 }

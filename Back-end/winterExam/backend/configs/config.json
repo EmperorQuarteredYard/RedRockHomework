@@ -1,0 +1,16 @@
+{
+"db":{
+  "host": "localhost",
+  "port": "3306",
+  "username": "RedRockServe1",
+  "password": "RedRockOrganization",
+  "database": "RedRockWinterExam"
+},
+"jwt": {
+  "access_secret": "Tr-xQz7ZbCy2eqBML3Gqj99PLezVww1XCjwo8F55lmryVpLz2A0Vob2RlauXrf_elUszR24czQ5N3ara-wkJgJdzPrrFWkiTQTzcDkYsvU1m-KjCZs3eW_oYRa4PWZ5e",
+  "refresh_secret": "eluraVxBDGXZVy8XLIHi1h05YtXJ624_BXJmsZhD15nR1oqgIlm-5l6KtsUfRLLvjqe0eky6GQ7ANxV-3xhLrtJaUhN8Cyaq16jK-pNNGtRls6cTrpbEDF3aZ5pvxcQ5",
+  "issuer": "RedRockWinterExam_HomeworkSystem_by_EQY/HJT",
+  "access_expire": 3600000000000,
+  "refresh_expire": 259200000000000
+}
+}

@@ -1,5 +1,6 @@
 package service
 
+//这个部分好像应该被删除的
 import (
 	"fmt"
 	"homeworkSystem/backend/internal/models"
@@ -31,7 +32,7 @@ func (d *GeneralDelegation) handelDepartment(userDepartment, permittedDepartment
 	d.success = false
 	d.c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"code":    StatusDepartmentMismatch,
-		"message": repository.ErrorDepartmentNotMatch,
+		"message": repository.ErrDepartmentNotMatch,
 		"data":    nil,
 	})
 }
@@ -45,7 +46,7 @@ func (d *GeneralDelegation) handlePermissionRole(userRole, permittedRole string)
 	d.success = false
 	d.c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"code":    StatusPermissionInsufficient,
-		"message": repository.ErrorInsufficientPermissions,
+		"message": repository.ErrInsufficientPermissions,
 		"data":    nil,
 	})
 }
@@ -127,7 +128,7 @@ func (d *GeneralDelegation) handleDataBind(message interface{}) {
 }
 
 // handleUserVerify 取得用户信息
-func (d *GeneralDelegation) handleUserVerify(user *WEjwt.AuthUser) {
+func (d *GeneralDelegation) handleUserVerify(user *jwt.AuthUser) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 	if !d.success {
@@ -138,7 +139,7 @@ func (d *GeneralDelegation) handleUserVerify(user *WEjwt.AuthUser) {
 		d.handleErrorAbort(fmt.Errorf("maybe the stupid programmer forget to use jwt middleware"))
 		return
 	}
-	authUser, ok := bearerUser.(WEjwt.AuthUser)
+	authUser, ok := bearerUser.(jwt.AuthUser)
 	if !ok {
 		d.handleErrorAbort(fmt.Errorf("user is not a user"))
 		return

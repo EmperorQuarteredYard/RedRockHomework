@@ -12,14 +12,14 @@ func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			response.Error(c, jwt.ErrMissingToken)
+			response.Code(c, jwt.StatusMissedToken)
 			c.Abort()
 			return
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
 		if !(len(parts) == 2 && parts[0] == "Bearer") {
-			response.Error(c, jwt.ErrInvalidToken)
+			response.Code(c, jwt.StatusMissedToken)
 			c.Abort()
 			return
 		}

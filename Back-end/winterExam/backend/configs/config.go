@@ -1,50 +1,68 @@
 package configs
 
 import (
+	"encoding/json"
 	"homeworkSystem/backend/internal/models"
 	"log"
+	"os"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 type Config struct {
-	DB  DSNConfig
-	JWT JWTConfig
+	DB  DSNConfig `json:"db"`
+	JWT JWTConfig `json:"jwt"`
 }
 
 type DSNConfig struct {
-	User     string
-	Password string
-	Host     string
-	Port     string
-	DBName   string
+	User     string `json:"username"`
+	Password string `json:"password"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	DBName   string `json:"database"`
 }
 
 type JWTConfig struct {
-	AccessSecret  string
-	RefreshSecret string
-	AccessExpire  int // 小时
-	RefreshExpire int // 天
+	AccessSecret  string `json:"access_secret"`
+	RefreshSecret string `json:"refresh_secret"`
+	Issuer        string `json:"issuer"`
+	AccessExpire  int    `json:"access_expire"`
+	RefreshExpire int    `json:"refresh_expire"`
 }
 
 func LoadConfig() *Config {
 	// 实际项目中应从环境变量或配置文件读取
-	return &Config{
-		DB: DSNConfig{
-			User:     "root",
-			Password: "123456",
-			Host:     "127.0.0.1",
-			Port:     "3306",
-			DBName:   "homework",
-		},
-		JWT: JWTConfig{
-			AccessSecret:  "access_secret_key",
-			RefreshSecret: "refresh_secret_key",
-			AccessExpire:  2, // 2小时
-			RefreshExpire: 7, // 7天
-		},
+	var config Config
+	file, err := os.Open("backend/configs/config.json")
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+		return nil
 	}
+	defer file.Close()
+	err = json.NewDecoder(file).Decode(&config)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+		return nil
+	}
+	return &config
+	//return &Config{
+	//	DB: DSNConfig{
+	//		User:     "root",
+	//		Password: "123456",
+	//		Host:     "127.0.0.1",
+	//		Port:     "3306",
+	//		DBName:   "homework",
+	//	},
+	//	JWT: JWTConfig{
+	//		AccessSecret:  "access_secret_key",
+	//		RefreshSecret: "refresh_secret_key",
+	//		AccessExpire:  2, // 2小时
+	//		RefreshExpire: 7, // 7天
+	//	},
+	//}
 }
 
 func InitDB(cfg *Config) *gorm.DB {

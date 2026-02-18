@@ -3,6 +3,7 @@ package errcode
 import (
 	"errors"
 	"homeworkSystem/backend/internal/repository"
+	"homeworkSystem/backend/pkg/jwt"
 )
 
 const (
@@ -18,15 +19,20 @@ const (
 )
 
 var codeMsgMap = map[int]string{
-	Success:                    "success",
-	ErrInvalidParams:           "参数错误",
-	ErrUnauthorized:            "未认证",
-	ErrInsufficientPermissions: "权限不足",
-	ErrDepartmentNotMatch:      "部门不匹配",
-	ErrSubmitLate:              "已过截止时间且不允许补交",
-	ErrNotFound:                "记录不存在",
-	ErrDuplicateEntry:          "记录已存在",
-	ErrServer:                  "服务器内部错误",
+	Success:                           "success",
+	ErrInvalidParams:                  "参数错误",
+	ErrUnauthorized:                   "未认证",
+	ErrInsufficientPermissions:        "权限不足",
+	ErrDepartmentNotMatch:             "部门不匹配",
+	ErrSubmitLate:                     "已过截止时间且不允许补交",
+	ErrNotFound:                       "记录不存在",
+	ErrDuplicateEntry:                 "记录已存在",
+	ErrServer:                         "服务器内部错误",
+	jwt.StatusInvalidToken:            "Token不合法",
+	jwt.StatusInsufficientPermissions: "Token权限不足",
+	jwt.StatusMissedToken:             "缺少Token",
+	jwt.StatusInvalidUserData:         "用户数据格式不正确",
+	jwt.StatusUserNotAuthenticated:    "用户未被授权",
 }
 
 func CodeMsg(code int) string {

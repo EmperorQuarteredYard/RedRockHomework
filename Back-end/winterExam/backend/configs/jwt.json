@@ -2,6 +2,6 @@
   "access_secret": "0NBnYG0Exsq2EyaIT8xzhoVtbAAE6fFFPSLS_wqvQ92TxbZWClW34Ku5OylYgWXBPllrI94qz1VfxTbUTdD8Z2BNbnL2WyaWdow6ne81WOjtPwezMkcrNupJGZpfbSSn",
   "refresh_secret": "nvuhmuAHHXiVer0Z1k2UnV2hTY95-GSXjhoISw7zka1db42fKJipgBLNLl73ElhD0omCUVfJgaw2OB1iYsdgSa9tyzsDO2vYMrwQgmmeSw3ZCScYzHXCMdZrZNmVzov-",
   "issuer": "RedRockWinterExam_HomeworkSystem_by_EQY/HJT",
-  "access_ttl": 3600000000000,
-  "refresh_ttl": 259200000000000
+  "access_expire": 3600000000000,
+  "refresh_expire": 259200000000000
 }
