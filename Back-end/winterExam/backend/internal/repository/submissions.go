@@ -1,92 +1,64 @@
 package repository
 
 import (
-	"fmt"
+	"errors"
 	"homeworkSystem/backend/internal/models"
 
 	"gorm.io/gorm"
 )
 
-type SubmissionDAO struct {
+type SubmissionRepo struct {
 	db *gorm.DB
 }
 
-func NewSubmissionDAO(db *gorm.DB) *SubmissionDAO {
-	return &SubmissionDAO{
-		db: db,
-	}
+func NewSubmissionRepo(db *gorm.DB) *SubmissionRepo {
+	return &SubmissionRepo{db: db}
 }
 
-func (d *SubmissionDAO) Create(sub *models.Submission) error {
-	return d.db.Create(sub).Error
+func (r *SubmissionRepo) Create(submission *models.Submission) error {
+	return r.db.Create(submission).Error
 }
 
-func (d *SubmissionDAO) FindBySubmitterID(submitterID uint64) (sub *[]models.Submission, err error) {
-	sub = &[]models.Submission{}
-	err = d.db.Where("submitter_id = ?", submitterID).Find(sub).Error
-	if err != nil {
-		return nil, err
-	}
-	return
-}
-
-// FindByDepartment 查看部门提交，不作任何检查
-func (d *SubmissionDAO) FindByDepartment(department string) (sub *[]models.Submission, err error) {
-	sub = &[]models.Submission{}
-	err = d.db.Where("department = ?", department).Find(sub).Error
-	if err != nil {
-		return nil, err
-	}
-	return
-}
-
-// SetCommentAndScore 批改评语，会检查提交部门是否合法，是不是老登
-func (d *SubmissionDAO) SetCommentAndScore(comment string, score int, submissionID uint64, user *models.User) error {
-	if user.Role != models.RoleOldLight {
-		return fmt.Errorf(ErrorInsufficientPermissions)
-	}
+func (r *SubmissionRepo) FindByID(id uint64) (*models.Submission, error) {
 	var sub models.Submission
-	err := d.db.Where("submitter_id = ?", submissionID).Find(&sub).Error
+	err := r.db.First(&sub, id).Error
 	if err != nil {
-		return err
-	}
-
-	if sub.Department != user.Department {
-		return fmt.Errorf(ErrorDepartmentNotMatch)
-	}
-
-	sub.Comment = comment
-	sub.Score = score
-	return d.db.Updates(&sub).Error
-}
-
-// SetExcellent 标记优秀，会检查提交部门是否合法，是不是老登
-func (d *SubmissionDAO) SetExcellent(submissionID uint64, user *models.User) error {
-	if user.Role != models.RoleOldLight {
-		return fmt.Errorf(ErrorInsufficientPermissions)
-	}
-	var sub models.Submission
-	err := d.db.Where("submitter_id = ?", submissionID).Find(&sub).Error
-	if err != nil {
-		return err
-	}
-
-	if sub.Department != user.Department {
-		return fmt.Errorf(ErrorDepartmentNotMatch)
-	}
-	if sub.Excellent {
-		return nil
-	}
-	return d.db.Model(&models.Submission{}).Where("id = ?", submissionID).Update("excellent", true).Error
-
-}
-
-// GetExcellent 优秀作业展示，不作任何检查
-func (d *SubmissionDAO) GetExcellent(department string) (sub *[]models.Submission, err error) {
-	sub = &[]models.Submission{}
-	err = d.db.Model(&models.Submission{}).Where("excellent = ? and department = ?", true, department).Find(sub).Error
-	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
-	return
+	return &sub, nil
+}
+
+func (r *SubmissionRepo) FindByStudent(studentID uint64) ([]models.Submission, error) {
+	var list []models.Submission
+	err := r.db.Where("student_id = ?", studentID).Order("created_at desc").Find(&list).Error
+	return list, err
+}
+
+func (r *SubmissionRepo) FindByHomework(homeworkID uint64) ([]models.Submission, error) {
+	var list []models.Submission
+	err := r.db.Where("homework_id = ?", homeworkID).Order("created_at desc").Find(&list).Error
+	return list, err
+}
+
+func (r *SubmissionRepo) FindByDepartment(department string) ([]models.Submission, error) {
+	var list []models.Submission
+	err := r.db.Where("department = ?", department).Order("created_at desc").Find(&list).Error
+	return list, err
+}
+
+func (r *SubmissionRepo) Update(submission *models.Submission) error {
+	return r.db.Save(submission).Error
+}
+
+func (r *SubmissionRepo) FindExcellent(department string) ([]models.Submission, error) {
+	var list []models.Submission
+	db := r.db.Where("is_excellent = ?", true)
+	if department != "" {
+		db = db.Where("department = ?", department)
+	}
+	err := db.Order("score desc").Find(&list).Error
+	return list, err
 }

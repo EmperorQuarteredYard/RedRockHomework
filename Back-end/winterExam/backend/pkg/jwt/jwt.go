@@ -1,4 +1,4 @@
-package WEjwt
+package jwt
 
 import (
 	"encoding/json"

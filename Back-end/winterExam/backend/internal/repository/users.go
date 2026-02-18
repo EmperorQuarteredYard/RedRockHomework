@@ -1,80 +1,53 @@
 package repository
 
 import (
-	"homeworkSystem/backend/internal/models"
-
+	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"homeworkSystem/backend/internal/models"
 )
 
-type UserDao struct {
+type UserRepo struct {
 	db *gorm.DB
 }
 
-func NewUserDao(db *gorm.DB) *UserDao {
-	return &UserDao{
-		db: db,
-	}
+func NewUserRepo(db *gorm.DB) *UserRepo {
+	return &UserRepo{db: db}
 }
 
-func (d *UserDao) Register(userName, password, department, nickname, role string) (user *models.User, err error) {
-	_, err = models.GetDepartment(department)
-	if err != nil {
-		return nil, err
-	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, err
-	}
-	user = &models.User{
-		Name:         userName,
-		PasswordHash: string(hash),
-		Role:         role,
-		Department:   department,
-		Nickname:     nickname,
-	}
-	err = d.db.Create(user).Error
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
+func (r *UserRepo) Create(user *models.User) error {
+	return r.db.Create(user).Error
 }
 
-func (d *UserDao) Login(userName, password string) (user *models.User, err error) {
-	user = &models.User{}
-	err = d.db.Where("name = ?", userName).First(user).Error
+func (r *UserRepo) FindByUsername(username string) (*models.User, error) {
+	var user models.User
+	err := r.db.Where("name = ?", username).First(&user).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	return &user, nil
+}
+
+func (r *UserRepo) FindByID(id uint64) (*models.User, error) {
+	var user models.User
+	err := r.db.First(&user, id).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
-	return user, nil
+	return &user, nil
 }
 
-func (d *UserDao) SoftDelete(userID uint64, password string) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	user := &models.User{}
-	err = d.db.Where("id = ?", userID).First(user).Error
-	if err != nil {
-		return err
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
-	if err != nil {
-		return err
-	}
-
-	return d.db.Where("id = ? and password_hash = ?", userID, hash).Delete(&models.User{}).Error
+func (r *UserRepo) SoftDelete(id uint64) error {
+	return r.db.Delete(&models.User{}, id).Error
 }
 
-func (d *UserDao) FindByID(ID uint64) (*models.User, error) {
-	user := &models.User{}
-	result := d.db.Where("id = ?", ID).First(user)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return user, nil
+// 验证密码
+func (r *UserRepo) ComparePassword(hashedPwd, plainPwd string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(plainPwd))
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"homeworkSystem/backend/internal/models"
 	"homeworkSystem/backend/internal/repository"
-	WEjwt "homeworkSystem/backend/pkg/middleware/jwt"
+	"homeworkSystem/backend/pkg/jwt"
 	"net/http"
 	"sync"
 

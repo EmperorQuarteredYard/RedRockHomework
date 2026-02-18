@@ -1,4 +1,4 @@
-package WEjwt
+package jwt
 
 const (
 	StatusInvalidToken            = 20001
