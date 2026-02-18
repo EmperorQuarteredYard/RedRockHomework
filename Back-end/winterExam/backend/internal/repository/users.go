@@ -52,3 +52,15 @@ func (r *UserRepo) SoftDelete(id uint64) error {
 func (r *UserRepo) ComparePassword(hashedPwd, plainPwd string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(plainPwd))
 }
+
+func (r *UserRepo) GetNicknameByID(id uint64) (string, error) {
+	var nickname string
+	err := r.db.Model(&models.User{}).Where("id = ?", id).Select("nickname").Scan(&nickname).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", ErrNotFound
+		}
+		return "", err
+	}
+	return nickname, nil
+}

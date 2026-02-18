@@ -25,7 +25,7 @@ func (ctl *HomeworkController) Publish(c *gin.Context) {
 		return
 	}
 	if authUser.Role != "admin" {
-		ctl.HandleError(c, errcode.ErrInsufficientPermissions)
+		ctl.HandleCode(c, errcode.ErrInsufficientPermissions)
 		return
 	}
 
@@ -42,7 +42,7 @@ func (ctl *HomeworkController) Publish(c *gin.Context) {
 
 	deadline, err := time.Parse("2006-01-02 15:04:05", req.Deadline)
 	if err != nil {
-		ctl.HandleError(c, errcode.ErrInvalidParams)
+		ctl.HandleCode(c, errcode.ErrInvalidParams)
 		return
 	}
 
@@ -93,20 +93,30 @@ func (ctl *HomeworkController) List(c *gin.Context) {
 		ctl.HandleError(c, err)
 		return
 	}
-
+	var count int64
+	var nickname string
 	var respList []gin.H
 	for _, a := range list {
+		count, err = ctl.svc.CountSubmissionsByHomework(a.ID)
+		if err != nil {
+			count = -1
+		}
+		nickname, err = ctl.svc.GetNicknameByID(a.ID)
+		if err != nil {
+			nickname = "用户不存在"
+		}
 		respList = append(respList, gin.H{
 			"id":               a.ID,
 			"title":            a.Title,
 			"department":       a.Department,
 			"department_label": ctl.DepartmentLabel(a.Department),
 			"creator": gin.H{
-				"id": a.CreatorID, // 如需发布者昵称需联查，此处简化
+				"id":       a.CreatorID,
+				"nickname": nickname,
 			},
 			"deadline":         a.DeadlineString(),
 			"allow_late":       a.AllowLate,
-			"submission_count": 0, // 可后续补充统计
+			"submission_count": count,
 		})
 	}
 
@@ -127,7 +137,7 @@ func (ctl *HomeworkController) GetDetail(c *gin.Context) {
 
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		ctl.HandleError(c, errcode.ErrInvalidParams)
+		ctl.HandleCode(c, errcode.ErrInvalidParams)
 		return
 	}
 
@@ -157,6 +167,12 @@ func (ctl *HomeworkController) GetDetail(c *gin.Context) {
 		}
 	}
 
+	var count int64
+	count, err = ctl.svc.CountSubmissionsByHomework(assignment.ID)
+	if err != nil {
+		count = -1
+	}
+
 	ctl.Success(c, gin.H{
 		"id":               assignment.ID,
 		"title":            assignment.Title,
@@ -169,7 +185,7 @@ func (ctl *HomeworkController) GetDetail(c *gin.Context) {
 		},
 		"deadline":         assignment.DeadlineString(),
 		"allow_late":       assignment.AllowLate,
-		"submission_count": 0, // 需统计
+		"submission_count": count,
 		"my_submission":    mySubmission,
 	})
 }
@@ -181,13 +197,13 @@ func (ctl *HomeworkController) Update(c *gin.Context) {
 		return
 	}
 	if authUser.Role != "admin" {
-		ctl.HandleError(c, errcode.ErrInsufficientPermissions)
+		ctl.HandleCode(c, errcode.ErrInsufficientPermissions)
 		return
 	}
 
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		ctl.HandleError(c, errcode.ErrInvalidParams)
+		ctl.HandleCode(c, errcode.ErrInvalidParams)
 		return
 	}
 
@@ -212,7 +228,7 @@ func (ctl *HomeworkController) Update(c *gin.Context) {
 	if req.Deadline != nil {
 		deadline, err := time.Parse("2006-01-02 15:04:05", *req.Deadline)
 		if err != nil {
-			ctl.HandleError(c, errcode.ErrInvalidParams)
+			ctl.HandleCode(c, errcode.ErrInvalidParams)
 			return
 		}
 		updates["deadline"] = deadline
@@ -248,13 +264,13 @@ func (ctl *HomeworkController) Delete(c *gin.Context) {
 		return
 	}
 	if authUser.Role != "admin" {
-		ctl.HandleError(c, errcode.ErrInsufficientPermissions)
+		ctl.HandleCode(c, errcode.ErrInsufficientPermissions)
 		return
 	}
 
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		ctl.HandleError(c, errcode.ErrInvalidParams)
+		ctl.HandleCode(c, errcode.ErrInvalidParams)
 		return
 	}
 

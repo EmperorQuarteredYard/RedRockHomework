@@ -121,3 +121,11 @@ func (s *Service) MarkExcellent(reviewer *models.User, submissionID uint64, isEx
 func (s *Service) GetExcellentSubmissions(department string) ([]models.Submission, error) {
 	return s.submissionRepo.FindExcellent(department)
 }
+
+func (s *Service) CountSubmissionsByStudentHomework(studentID, department uint64) (count int64, err error) {
+	return s.submissionRepo.CountByStudentHomework(studentID, department)
+}
+
+func (s *Service) CountSubmissionsByHomework(homeworkID uint64) (count int64, err error) {
+	return s.submissionRepo.CountByHomework(homeworkID)
+}

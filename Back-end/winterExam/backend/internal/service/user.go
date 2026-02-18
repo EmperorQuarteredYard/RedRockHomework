@@ -80,3 +80,7 @@ func (s *Service) DeleteAccount(userID uint64, password string) error {
 	}
 	return s.userRepo.SoftDelete(userID)
 }
+
+func (s *Service) GetNicknameByID(userID uint64) (string, error) {
+	return s.userRepo.GetNicknameByID(userID)
+}

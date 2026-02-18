@@ -112,3 +112,19 @@ func (r *SubmissionRepo) UpdateByMap(id uint64, updates map[string]interface{}) 
 	}
 	return &submission, nil
 }
+
+func (r *SubmissionRepo) CountByStudentHomework(studentID, homeworkID uint64) (count int64, err error) {
+	err = r.db.Model(&models.Submission{}).Where("student_id = ? and homework_id = ?", studentID, homeworkID).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return
+}
+
+func (r *SubmissionRepo) CountByHomework(homeworkID uint64) (count int64, err error) {
+	err = r.db.Model(&models.Submission{}).Where("homework_id = ?", homeworkID).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return
+}

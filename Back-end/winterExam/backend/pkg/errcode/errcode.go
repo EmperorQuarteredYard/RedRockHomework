@@ -29,6 +29,14 @@ var codeMsgMap = map[int]string{
 	ErrServer:                  "服务器内部错误",
 }
 
+func CodeMsg(code int) string {
+	msg, ok := codeMsgMap[code]
+	if ok {
+		return msg
+	}
+	return "nil"
+}
+
 func FromError(err error) (int, string) {
 	if err == nil {
 		return Success, codeMsgMap[Success]

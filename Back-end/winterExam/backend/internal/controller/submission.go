@@ -25,7 +25,7 @@ func (ctl *SubmissionController) Submit(c *gin.Context) {
 		return
 	}
 	if authUser.Role != "student" {
-		ctl.HandleError(c, errcode.ErrInsufficientPermissions)
+		ctl.HandleCode(c, errcode.ErrInsufficientPermissions)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (ctl *SubmissionController) MySubmissions(c *gin.Context) {
 		return
 	}
 	if authUser.Role != "student" {
-		ctl.HandleError(c, errcode.ErrInsufficientPermissions)
+		ctl.HandleCode(c, errcode.ErrInsufficientPermissions)
 		return
 	}
 
@@ -106,13 +106,13 @@ func (ctl *SubmissionController) HomeworkSubmissions(c *gin.Context) {
 		return
 	}
 	if authUser.Role != "admin" {
-		ctl.HandleError(c, errcode.ErrInsufficientPermissions)
+		ctl.HandleCode(c, errcode.ErrInsufficientPermissions)
 		return
 	}
 
 	homeworkID, err := strconv.ParseUint(c.Param("homework_id"), 10, 64)
 	if err != nil {
-		ctl.HandleError(c, errcode.ErrInvalidParams)
+		ctl.HandleCode(c, errcode.ErrInvalidParams)
 		return
 	}
 
@@ -123,7 +123,7 @@ func (ctl *SubmissionController) HomeworkSubmissions(c *gin.Context) {
 		return
 	}
 	if homework.Department != authUser.Department {
-		ctl.HandleError(c, errcode.ErrDepartmentNotMatch)
+		ctl.HandleCode(c, errcode.ErrDepartmentNotMatch)
 		return
 	}
 
@@ -166,13 +166,13 @@ func (ctl *SubmissionController) Review(c *gin.Context) {
 		return
 	}
 	if authUser.Role != "admin" {
-		ctl.HandleError(c, errcode.ErrInsufficientPermissions)
+		ctl.HandleCode(c, errcode.ErrInsufficientPermissions)
 		return
 	}
 
 	submissionID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		ctl.HandleError(c, errcode.ErrInvalidParams)
+		ctl.HandleCode(c, errcode.ErrInvalidParams)
 		return
 	}
 
@@ -213,13 +213,13 @@ func (ctl *SubmissionController) MarkExcellent(c *gin.Context) {
 		return
 	}
 	if authUser.Role != "admin" {
-		ctl.HandleError(c, errcode.ErrInsufficientPermissions)
+		ctl.HandleCode(c, errcode.ErrInsufficientPermissions)
 		return
 	}
 
 	submissionID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		ctl.HandleError(c, errcode.ErrInvalidParams)
+		ctl.HandleCode(c, errcode.ErrInvalidParams)
 		return
 	}
 

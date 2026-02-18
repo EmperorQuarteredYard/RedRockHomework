@@ -30,3 +30,11 @@ func Error(c *gin.Context, err error) {
 		Data:    nil,
 	})
 }
+
+func Code(c *gin.Context, code int) {
+	c.JSON(http.StatusOK, Response{
+		Code:    code,
+		Message: errcode.CodeMsg(code),
+		Data:    nil,
+	})
+}

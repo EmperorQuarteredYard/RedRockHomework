@@ -66,7 +66,7 @@ func (r *AssignmentRepo) Update(assignment *models.Assignment) error {
 	return err
 }
 
-// UpdateByMap 使用悲观锁更新作业字段
+// UpdateByMap 使用事务锁更新作业字段
 func (r *AssignmentRepo) UpdateByMap(id uint64, updates map[string]interface{}) (*models.Assignment, error) {
 	var assignment models.Assignment
 	err := r.db.Transaction(func(tx *gorm.DB) error {
