@@ -1,3 +1,4 @@
+// Package service 业务的service层，实际上也封装了controller层的内容
 package service
 
 import (
