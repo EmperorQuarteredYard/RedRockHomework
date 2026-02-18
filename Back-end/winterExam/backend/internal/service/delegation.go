@@ -22,6 +22,20 @@ func NewDelegation(c *gin.Context) *GeneralDelegation {
 	return &GeneralDelegation{c: c, success: true}
 }
 
+func (d *GeneralDelegation) handelDepartment(userDepartment, permittedDepartment string) {
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	if userDepartment == permittedDepartment {
+		return
+	}
+	d.success = false
+	d.c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+		"code":    StatusDepartmentMismatch,
+		"message": repository.ErrorDepartmentNotMatch,
+		"data":    nil,
+	})
+}
+
 func (d *GeneralDelegation) handlePermissionRole(userRole, permittedRole string) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
