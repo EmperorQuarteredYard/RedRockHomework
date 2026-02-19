@@ -83,4 +83,7 @@ func (s *Service) DeleteAccount(userID uint64, password string) error {
 
 func (s *Service) GetNicknameByID(userID uint64) (string, error) {
 	return s.userRepo.GetNicknameByID(userID)
+} // PromoteToAdmin 提升用户为管理员
+func (s *Service) PromoteToAdmin(userID uint64) error {
+	return s.userRepo.PromoteToAdmin(userID)
 }

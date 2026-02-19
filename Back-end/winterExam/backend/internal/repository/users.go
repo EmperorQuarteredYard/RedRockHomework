@@ -64,3 +64,11 @@ func (r *UserRepo) GetNicknameByID(id uint64) (string, error) {
 	}
 	return nickname, nil
 }
+func (r *UserRepo) PromoteToAdmin(userID uint64) error {
+	return r.db.Model(&models.User{}).Where("id = ?", userID).Update("role", models.RoleOldLight).Error
+}
+
+// Update 更新用户信息
+func (r *UserRepo) Update(user *models.User) error {
+	return r.db.Save(user).Error
+}
