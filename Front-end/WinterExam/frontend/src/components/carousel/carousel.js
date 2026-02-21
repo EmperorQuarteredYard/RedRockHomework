@@ -19,9 +19,7 @@ class Carousel {
           <div class="carousel-track" id="carouselTrack">
             ${this.banners.map((banner, index) => `
               <div class="carousel-slide ${index === 0 ? 'active' : ''}" data-index="${index}">
-                <a href="${banner.url || '#'}" target="_blank">
-                  <img src="${banner.pic}" alt="${banner.typeTitle || '轮播图'}">
-                </a>
+                <img src="${banner.pic || banner.imageUrl || ''}" alt="${banner.typeTitle || '轮播图'}" onclick="window.carousel.handleClick(${index})" onerror="this.style.display='none'">
               </div>
             `).join('')}
           </div>
@@ -42,6 +40,7 @@ class Carousel {
   async loadBanners() {
     try {
       const result = await api.getBanner()
+      console.log('Banner result:', result)
       if (result.banners && result.banners.length > 0) {
         this.banners = result.banners
         return true
@@ -113,6 +112,17 @@ class Carousel {
       carousel.addEventListener('mouseleave', () => this.startAutoPlay())
     }
     this.startAutoPlay()
+  }
+
+  handleClick(index) {
+    const banner = this.banners[index]
+    if (!banner) return
+    
+    if (banner.targetId && banner.targetType === 1) {
+      window.playlistCard?.openPlaylist(banner.targetId)
+    } else if (banner.url) {
+      window.open(banner.url, '_blank')
+    }
   }
 }
 

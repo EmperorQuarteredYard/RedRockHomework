@@ -45,6 +45,7 @@ class HomePage {
   async loadRecommendPlaylists() {
     try {
       const result = await api.getPersonalized(10)
+      console.log('Recommend playlists result:', result)
       if (result.code === 200 && result.result) {
         this.recommendPlaylists = result.result
         this.renderRecommendList()
