@@ -116,38 +116,59 @@ class LoginModal {
       const keyResult = await api.getQRKey()
       console.log('QR Key Result:', keyResult)
       
-      const unikey = keyResult.data?.unikey || keyResult.body?.data?.unikey || keyResult.unikey
-      if (keyResult.code === 200 && unikey) {
-        this.qrKey = unikey
-        const qrResult = await api.getQRCode(this.qrKey, true)
-        console.log('QR Code Result:', qrResult)
-        
-        const qrimg = qrResult.data?.qrimg || qrResult.body?.data?.qrimg || qrResult.qrimg
-        const qrurl = qrResult.data?.qrurl || qrResult.body?.data?.qrurl || qrResult.qrurl
-        
-        if (qrResult.code === 200 && qrimg) {
-          console.log('Setting QR image src')
-          if (qrImg) {
-            qrImg.src = qrimg
-          }
-          if (loading) loading.classList.add('hidden')
-          if (status) status.textContent = '请使用网易云音乐APP扫码'
-          this.startQRCodeCheck()
-        } else if (qrResult.code === 200 && qrurl) {
-          console.log('Using QR URL:', qrurl)
-          if (qrImg) {
-            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrurl)}`
-          }
-          if (loading) loading.classList.add('hidden')
-          if (status) status.textContent = '请使用网易云音乐APP扫码'
-          this.startQRCodeCheck()
-        } else {
-          console.log('qrResult structure:', JSON.stringify(qrResult, null, 2))
-          throw new Error('获取二维码图片失败')
+      let unikey = null
+      if (keyResult.code === 200) {
+        unikey = keyResult.data?.unikey || keyResult.body?.data?.unikey || keyResult.unikey
+      }
+      
+      if (!unikey) {
+        throw new Error('获取二维码Key失败: ' + JSON.stringify(keyResult))
+      }
+      
+      this.qrKey = unikey
+      const qrResult = await api.getQRCode(this.qrKey, true)
+      console.log('QR Code Result:', qrResult)
+      
+      let qrimg = null
+      let qrurl = null
+      
+      if (qrResult.code === 200) {
+        qrimg = qrResult.data?.qrimg || qrResult.body?.data?.qrimg || qrResult.qrimg
+        qrurl = qrResult.data?.qrurl || qrResult.body?.data?.qrurl || qrResult.qrurl
+      }
+      
+      console.log('qrimg:', qrimg ? 'exists' : 'null')
+      console.log('qrurl:', qrurl)
+      
+      if (qrimg) {
+        console.log('Using base64 QR image')
+        if (qrImg) {
+          qrImg.src = qrimg
+          qrImg.style.display = 'block'
+          qrImg.style.visibility = 'visible'
+        }
+      } else if (qrurl) {
+        console.log('Using QR URL to generate image')
+        if (qrImg) {
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrurl)}`
+          qrImg.style.display = 'block'
+          qrImg.style.visibility = 'visible'
         }
       } else {
-        throw new Error('获取二维码Key失败')
+        throw new Error('获取二维码图片失败: ' + JSON.stringify(qrResult))
       }
+      
+      if (loading) {
+        loading.classList.add('hidden')
+        loading.style.display = 'none'
+      }
+      if (expired) {
+        expired.classList.add('hidden')
+        expired.style.display = 'none'
+      }
+      if (status) status.textContent = '请使用网易云音乐APP扫码'
+      this.startQRCodeCheck()
+      
     } catch (error) {
       console.error('获取二维码失败:', error)
       if (loading) loading.classList.add('hidden')
